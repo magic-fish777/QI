@@ -42,8 +42,8 @@ async def chat_text(data: ChatRequest):
 
     if is_sensitive(user_text):
         bad = find_sensitive(user_text)
-        tts_and_play("抱歉，我无法回答该内容。", role_key=role)
-        return {"reply": f"检测到敏感词 {bad}，已拒绝响应"}
+        audio_file = tts_and_play("抱歉，我无法回答该内容。", role_key=role)
+        return {"reply": f"检测到敏感词 {bad}，已拒绝响应", "audio_file": audio_file}
 
     # 初始化角色对话历史
     if role not in CHAT_HISTORIES:
@@ -58,10 +58,17 @@ async def chat_text(data: ChatRequest):
     # 助手回复加入历史
     CHAT_HISTORIES[role].append({"role": "assistant", "content": reply})
 
-    # TTS 播放
-    tts_and_play(reply, role_key=role)
+    # TTS 生成音频
+    audio_file = tts_and_play(reply, role_key=role)
 
-    return {"role": role, "user": user_text, "reply": reply}
+    # 如果要直接播放，可以额外调用 playsound(audio_file)
+
+    return {
+        "role": role,
+        "user": user_text,
+        "reply": reply,
+        "audio_file": audio_file  # 新增返回字段
+    }
 
 
 
