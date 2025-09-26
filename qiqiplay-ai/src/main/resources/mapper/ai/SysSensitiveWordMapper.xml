@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qiqiplay.ai.mapper.SysSensitiveWordMapper">
+    
+    <resultMap type="SysSensitiveWord" id="SysSensitiveWordResult">
+        <result property="wordId"    column="word_id"    />
+        <result property="wordContent"    column="word_content"    />
+        <result property="wordCategory"    column="word_category"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <sql id="selectSysSensitiveWordVo">
+        select word_id, word_content, word_category, create_by, create_time, update_by, update_time from sys_sensitive_word
+    </sql>
+
+    <select id="selectSysSensitiveWordList" parameterType="SysSensitiveWord" resultMap="SysSensitiveWordResult">
+        <include refid="selectSysSensitiveWordVo"/>
+        <where>  
+            <if test="wordContent != null  and wordContent != ''"> and word_content = #{wordContent}</if>
+            <if test="wordCategory != null  and wordCategory != ''"> and word_category = #{wordCategory}</if>
+        </where>
+    </select>
+    
+    <select id="selectSysSensitiveWordByWordId" parameterType="Long" resultMap="SysSensitiveWordResult">
+        <include refid="selectSysSensitiveWordVo"/>
+        where word_id = #{wordId}
+    </select>
+
+    <insert id="insertSysSensitiveWord" parameterType="SysSensitiveWord" useGeneratedKeys="true" keyProperty="wordId">
+        insert into sys_sensitive_word
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="wordContent != null and wordContent != ''">word_content,</if>
+            <if test="wordCategory != null and wordCategory != ''">word_category,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="wordContent != null and wordContent != ''">#{wordContent},</if>
+            <if test="wordCategory != null and wordCategory != ''">#{wordCategory},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSysSensitiveWord" parameterType="SysSensitiveWord">
+        update sys_sensitive_word
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="wordContent != null and wordContent != ''">word_content = #{wordContent},</if>
+            <if test="wordCategory != null and wordCategory != ''">word_category = #{wordCategory},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where word_id = #{wordId}
+    </update>
+
+    <delete id="deleteSysSensitiveWordByWordId" parameterType="Long">
+        delete from sys_sensitive_word where word_id = #{wordId}
+    </delete>
+
+    <delete id="deleteSysSensitiveWordByWordIds" parameterType="String">
+        delete from sys_sensitive_word where word_id in 
+        <foreach item="wordId" collection="array" open="(" separator="," close=")">
+            #{wordId}
+        </foreach>
+    </delete>
+</mapper>

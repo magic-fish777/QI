@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qiqiplay.ai.mapper.SysVoiceCacheMapper">
+    
+    <resultMap type="SysVoiceCache" id="SysVoiceCacheResult">
+        <result property="voiceId"    column="voice_id"    />
+        <result property="userId"    column="user_id"    />
+        <result property="voiceType"    column="voice_type"    />
+        <result property="relatedRecordId"    column="related_record_id"    />
+        <result property="voiceUrl"    column="voice_url"    />
+        <result property="voiceDuration"    column="voice_duration"    />
+        <result property="uploadTime"    column="upload_time"    />
+        <result property="expireTime"    column="expire_time"    />
+        <result property="delFlag"    column="del_flag"    />
+    </resultMap>
+
+    <sql id="selectSysVoiceCacheVo">
+        select voice_id, user_id, voice_type, related_record_id, voice_url, voice_duration, upload_time, expire_time, del_flag from sys_voice_cache
+    </sql>
+
+    <select id="selectSysVoiceCacheList" parameterType="SysVoiceCache" resultMap="SysVoiceCacheResult">
+        <include refid="selectSysVoiceCacheVo"/>
+        <where>  
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="voiceType != null  and voiceType != ''"> and voice_type = #{voiceType}</if>
+            <if test="relatedRecordId != null "> and related_record_id = #{relatedRecordId}</if>
+            <if test="voiceUrl != null  and voiceUrl != ''"> and voice_url = #{voiceUrl}</if>
+            <if test="voiceDuration != null "> and voice_duration = #{voiceDuration}</if>
+            <if test="uploadTime != null "> and upload_time = #{uploadTime}</if>
+            <if test="expireTime != null "> and expire_time = #{expireTime}</if>
+        </where>
+    </select>
+    
+    <select id="selectSysVoiceCacheByVoiceId" parameterType="Long" resultMap="SysVoiceCacheResult">
+        <include refid="selectSysVoiceCacheVo"/>
+        where voice_id = #{voiceId}
+    </select>
+
+    <insert id="insertSysVoiceCache" parameterType="SysVoiceCache" useGeneratedKeys="true" keyProperty="voiceId">
+        insert into sys_voice_cache
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null">user_id,</if>
+            <if test="voiceType != null and voiceType != ''">voice_type,</if>
+            <if test="relatedRecordId != null">related_record_id,</if>
+            <if test="voiceUrl != null and voiceUrl != ''">voice_url,</if>
+            <if test="voiceDuration != null">voice_duration,</if>
+            <if test="uploadTime != null">upload_time,</if>
+            <if test="expireTime != null">expire_time,</if>
+            <if test="delFlag != null">del_flag,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userId != null">#{userId},</if>
+            <if test="voiceType != null and voiceType != ''">#{voiceType},</if>
+            <if test="relatedRecordId != null">#{relatedRecordId},</if>
+            <if test="voiceUrl != null and voiceUrl != ''">#{voiceUrl},</if>
+            <if test="voiceDuration != null">#{voiceDuration},</if>
+            <if test="uploadTime != null">#{uploadTime},</if>
+            <if test="expireTime != null">#{expireTime},</if>
+            <if test="delFlag != null">#{delFlag},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSysVoiceCache" parameterType="SysVoiceCache">
+        update sys_voice_cache
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="voiceType != null and voiceType != ''">voice_type = #{voiceType},</if>
+            <if test="relatedRecordId != null">related_record_id = #{relatedRecordId},</if>
+            <if test="voiceUrl != null and voiceUrl != ''">voice_url = #{voiceUrl},</if>
+            <if test="voiceDuration != null">voice_duration = #{voiceDuration},</if>
+            <if test="uploadTime != null">upload_time = #{uploadTime},</if>
+            <if test="expireTime != null">expire_time = #{expireTime},</if>
+            <if test="delFlag != null">del_flag = #{delFlag},</if>
+        </trim>
+        where voice_id = #{voiceId}
+    </update>
+
+    <delete id="deleteSysVoiceCacheByVoiceId" parameterType="Long">
+        delete from sys_voice_cache where voice_id = #{voiceId}
+    </delete>
+
+    <delete id="deleteSysVoiceCacheByVoiceIds" parameterType="String">
+        delete from sys_voice_cache where voice_id in 
+        <foreach item="voiceId" collection="array" open="(" separator="," close=")">
+            #{voiceId}
+        </foreach>
+    </delete>
+</mapper>

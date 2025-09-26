@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qiqiplay.ai.mapper.SysRoleAiMapper">
+    
+    <resultMap type="SysRoleAi" id="SysRoleAiResult">
+        <result property="roleId"    column="role_id"    />
+        <result property="roleName"    column="role_name"    />
+        <result property="roleIdentity"    column="role_identity"    />
+        <result property="roleCategory"    column="role_category"    />
+        <result property="roleAvatar"    column="role_avatar"    />
+        <result property="isCustom"    column="is_custom"    />
+        <result property="creatorUserId"    column="creator_user_id"    />
+        <result property="status"    column="status"    />
+        <result property="delFlag"    column="del_flag"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"    column="remark"    />
+    </resultMap>
+
+    <sql id="selectSysRoleAiVo">
+        select role_id, role_name, role_identity, role_category, role_avatar, is_custom, creator_user_id, status, del_flag, create_by, create_time, update_by, update_time, remark from sys_role_ai
+    </sql>
+
+    <select id="selectSysRoleAiList" parameterType="SysRoleAi" resultMap="SysRoleAiResult">
+        <include refid="selectSysRoleAiVo"/>
+        <where>  
+            <if test="roleName != null  and roleName != ''"> and role_name like concat('%', #{roleName}, '%')</if>
+            <if test="roleIdentity != null  and roleIdentity != ''"> and role_identity = #{roleIdentity}</if>
+            <if test="roleCategory != null  and roleCategory != ''"> and role_category = #{roleCategory}</if>
+            <if test="roleAvatar != null  and roleAvatar != ''"> and role_avatar = #{roleAvatar}</if>
+            <if test="isCustom != null  and isCustom != ''"> and is_custom = #{isCustom}</if>
+            <if test="creatorUserId != null "> and creator_user_id = #{creatorUserId}</if>
+            <if test="status != null  and status != ''"> and status = #{status}</if>
+        </where>
+    </select>
+    
+    <select id="selectSysRoleAiByRoleId" parameterType="Long" resultMap="SysRoleAiResult">
+        <include refid="selectSysRoleAiVo"/>
+        where role_id = #{roleId}
+    </select>
+
+    <insert id="insertSysRoleAi" parameterType="SysRoleAi" useGeneratedKeys="true" keyProperty="roleId">
+        insert into sys_role_ai
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="roleName != null and roleName != ''">role_name,</if>
+            <if test="roleIdentity != null and roleIdentity != ''">role_identity,</if>
+            <if test="roleCategory != null and roleCategory != ''">role_category,</if>
+            <if test="roleAvatar != null and roleAvatar != ''">role_avatar,</if>
+            <if test="isCustom != null">is_custom,</if>
+            <if test="creatorUserId != null">creator_user_id,</if>
+            <if test="status != null">status,</if>
+            <if test="delFlag != null">del_flag,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="roleName != null and roleName != ''">#{roleName},</if>
+            <if test="roleIdentity != null and roleIdentity != ''">#{roleIdentity},</if>
+            <if test="roleCategory != null and roleCategory != ''">#{roleCategory},</if>
+            <if test="roleAvatar != null and roleAvatar != ''">#{roleAvatar},</if>
+            <if test="isCustom != null">#{isCustom},</if>
+            <if test="creatorUserId != null">#{creatorUserId},</if>
+            <if test="status != null">#{status},</if>
+            <if test="delFlag != null">#{delFlag},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSysRoleAi" parameterType="SysRoleAi">
+        update sys_role_ai
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="roleName != null and roleName != ''">role_name = #{roleName},</if>
+            <if test="roleIdentity != null and roleIdentity != ''">role_identity = #{roleIdentity},</if>
+            <if test="roleCategory != null and roleCategory != ''">role_category = #{roleCategory},</if>
+            <if test="roleAvatar != null and roleAvatar != ''">role_avatar = #{roleAvatar},</if>
+            <if test="isCustom != null">is_custom = #{isCustom},</if>
+            <if test="creatorUserId != null">creator_user_id = #{creatorUserId},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="delFlag != null">del_flag = #{delFlag},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where role_id = #{roleId}
+    </update>
+
+    <delete id="deleteSysRoleAiByRoleId" parameterType="Long">
+        delete from sys_role_ai where role_id = #{roleId}
+    </delete>
+
+    <delete id="deleteSysRoleAiByRoleIds" parameterType="String">
+        delete from sys_role_ai where role_id in 
+        <foreach item="roleId" collection="array" open="(" separator="," close=")">
+            #{roleId}
+        </foreach>
+    </delete>
+</mapper>

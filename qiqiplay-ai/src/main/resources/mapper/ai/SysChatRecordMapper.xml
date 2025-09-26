@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qiqiplay.ai.mapper.SysChatRecordMapper">
+    
+    <resultMap type="SysChatRecord" id="SysChatRecordResult">
+        <result property="recordId"    column="record_id"    />
+        <result property="userId"    column="user_id"    />
+        <result property="roleId"    column="role_id"    />
+        <result property="userInputType"    column="user_input_type"    />
+        <result property="userInputContent"    column="user_input_content"    />
+        <result property="aiReplyContent"    column="ai_reply_content"    />
+        <result property="skillId"    column="skill_id"    />
+        <result property="chatLanguage"    column="chat_language"    />
+        <result property="chatTime"    column="chat_time"    />
+        <result property="delFlag"    column="del_flag"    />
+        <result property="createTime"    column="create_time"    />
+    </resultMap>
+
+    <sql id="selectSysChatRecordVo">
+        select record_id, user_id, role_id, user_input_type, user_input_content, ai_reply_content, skill_id, chat_language, chat_time, del_flag, create_time from sys_chat_record
+    </sql>
+
+    <select id="selectSysChatRecordList" parameterType="SysChatRecord" resultMap="SysChatRecordResult">
+        <include refid="selectSysChatRecordVo"/>
+        <where>  
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="roleId != null "> and role_id = #{roleId}</if>
+            <if test="userInputType != null  and userInputType != ''"> and user_input_type = #{userInputType}</if>
+            <if test="userInputContent != null  and userInputContent != ''"> and user_input_content = #{userInputContent}</if>
+            <if test="aiReplyContent != null  and aiReplyContent != ''"> and ai_reply_content = #{aiReplyContent}</if>
+            <if test="skillId != null "> and skill_id = #{skillId}</if>
+            <if test="chatLanguage != null  and chatLanguage != ''"> and chat_language = #{chatLanguage}</if>
+            <if test="chatTime != null "> and chat_time = #{chatTime}</if>
+        </where>
+    </select>
+    
+    <select id="selectSysChatRecordByRecordId" parameterType="Long" resultMap="SysChatRecordResult">
+        <include refid="selectSysChatRecordVo"/>
+        where record_id = #{recordId}
+    </select>
+
+    <insert id="insertSysChatRecord" parameterType="SysChatRecord" useGeneratedKeys="true" keyProperty="recordId">
+        insert into sys_chat_record
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null">user_id,</if>
+            <if test="roleId != null">role_id,</if>
+            <if test="userInputType != null and userInputType != ''">user_input_type,</if>
+            <if test="userInputContent != null and userInputContent != ''">user_input_content,</if>
+            <if test="aiReplyContent != null and aiReplyContent != ''">ai_reply_content,</if>
+            <if test="skillId != null">skill_id,</if>
+            <if test="chatLanguage != null">chat_language,</if>
+            <if test="chatTime != null">chat_time,</if>
+            <if test="delFlag != null">del_flag,</if>
+            <if test="createTime != null">create_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userId != null">#{userId},</if>
+            <if test="roleId != null">#{roleId},</if>
+            <if test="userInputType != null and userInputType != ''">#{userInputType},</if>
+            <if test="userInputContent != null and userInputContent != ''">#{userInputContent},</if>
+            <if test="aiReplyContent != null and aiReplyContent != ''">#{aiReplyContent},</if>
+            <if test="skillId != null">#{skillId},</if>
+            <if test="chatLanguage != null">#{chatLanguage},</if>
+            <if test="chatTime != null">#{chatTime},</if>
+            <if test="delFlag != null">#{delFlag},</if>
+            <if test="createTime != null">#{createTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSysChatRecord" parameterType="SysChatRecord">
+        update sys_chat_record
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="roleId != null">role_id = #{roleId},</if>
+            <if test="userInputType != null and userInputType != ''">user_input_type = #{userInputType},</if>
+            <if test="userInputContent != null and userInputContent != ''">user_input_content = #{userInputContent},</if>
+            <if test="aiReplyContent != null and aiReplyContent != ''">ai_reply_content = #{aiReplyContent},</if>
+            <if test="skillId != null">skill_id = #{skillId},</if>
+            <if test="chatLanguage != null">chat_language = #{chatLanguage},</if>
+            <if test="chatTime != null">chat_time = #{chatTime},</if>
+            <if test="delFlag != null">del_flag = #{delFlag},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+        </trim>
+        where record_id = #{recordId}
+    </update>
+
+    <delete id="deleteSysChatRecordByRecordId" parameterType="Long">
+        delete from sys_chat_record where record_id = #{recordId}
+    </delete>
+
+    <delete id="deleteSysChatRecordByRecordIds" parameterType="String">
+        delete from sys_chat_record where record_id in 
+        <foreach item="recordId" collection="array" open="(" separator="," close=")">
+            #{recordId}
+        </foreach>
+    </delete>
+</mapper>

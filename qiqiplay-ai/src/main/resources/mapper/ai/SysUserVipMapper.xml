@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qiqiplay.ai.mapper.SysUserVipMapper">
+    
+    <resultMap type="SysUserVip" id="SysUserVipResult">
+        <result property="vipId"    column="vip_id"    />
+        <result property="userId"    column="user_id"    />
+        <result property="vipType"    column="vip_type"    />
+        <result property="subscribeTime"    column="subscribe_time"    />
+        <result property="expireTime"    column="expire_time"    />
+        <result property="vipStatus"    column="vip_status"    />
+        <result property="customRoleQuota"    column="custom_role_quota"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <sql id="selectSysUserVipVo">
+        select vip_id, user_id, vip_type, subscribe_time, expire_time, vip_status, custom_role_quota, create_by, create_time, update_by, update_time from sys_user_vip
+    </sql>
+
+    <select id="selectSysUserVipList" parameterType="SysUserVip" resultMap="SysUserVipResult">
+        <include refid="selectSysUserVipVo"/>
+        <where>  
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="vipType != null  and vipType != ''"> and vip_type = #{vipType}</if>
+            <if test="subscribeTime != null "> and subscribe_time = #{subscribeTime}</if>
+            <if test="expireTime != null "> and expire_time = #{expireTime}</if>
+            <if test="vipStatus != null  and vipStatus != ''"> and vip_status = #{vipStatus}</if>
+            <if test="customRoleQuota != null "> and custom_role_quota = #{customRoleQuota}</if>
+        </where>
+    </select>
+    
+    <select id="selectSysUserVipByVipId" parameterType="Long" resultMap="SysUserVipResult">
+        <include refid="selectSysUserVipVo"/>
+        where vip_id = #{vipId}
+    </select>
+
+    <insert id="insertSysUserVip" parameterType="SysUserVip" useGeneratedKeys="true" keyProperty="vipId">
+        insert into sys_user_vip
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null">user_id,</if>
+            <if test="vipType != null">vip_type,</if>
+            <if test="subscribeTime != null">subscribe_time,</if>
+            <if test="expireTime != null">expire_time,</if>
+            <if test="vipStatus != null">vip_status,</if>
+            <if test="customRoleQuota != null">custom_role_quota,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userId != null">#{userId},</if>
+            <if test="vipType != null">#{vipType},</if>
+            <if test="subscribeTime != null">#{subscribeTime},</if>
+            <if test="expireTime != null">#{expireTime},</if>
+            <if test="vipStatus != null">#{vipStatus},</if>
+            <if test="customRoleQuota != null">#{customRoleQuota},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSysUserVip" parameterType="SysUserVip">
+        update sys_user_vip
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="vipType != null">vip_type = #{vipType},</if>
+            <if test="subscribeTime != null">subscribe_time = #{subscribeTime},</if>
+            <if test="expireTime != null">expire_time = #{expireTime},</if>
+            <if test="vipStatus != null">vip_status = #{vipStatus},</if>
+            <if test="customRoleQuota != null">custom_role_quota = #{customRoleQuota},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where vip_id = #{vipId}
+    </update>
+
+    <delete id="deleteSysUserVipByVipId" parameterType="Long">
+        delete from sys_user_vip where vip_id = #{vipId}
+    </delete>
+
+    <delete id="deleteSysUserVipByVipIds" parameterType="String">
+        delete from sys_user_vip where vip_id in 
+        <foreach item="vipId" collection="array" open="(" separator="," close=")">
+            #{vipId}
+        </foreach>
+    </delete>
+</mapper>
