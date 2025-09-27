@@ -88,41 +88,187 @@
             </div>
           </div>
 
-          <div class="character-list">
-            <div
-              v-for="character in filteredCharacters"
-              :key="character.id"
-              class="character-item"
-              :class="{ active: selectedCharacter && selectedCharacter.id === character.id }"
-              @click="selectCharacter(character)"
-            >
-              <div class="character-avatar">
-                <img :src="character.avatar" :alt="character.name">
-                <div class="online-indicator" :class="{ online: character.online }"></div>
-              </div>
-              <div class="character-info">
-                <div class="character-name">{{ character.name }}</div>
-                <div class="character-desc">{{ character.description }}</div>
-                <div class="last-message" v-if="character.lastMessage">
-                  {{ character.lastMessage }}
+          <!-- 左侧内容区域 -->
+          <div class="sidebar-content">
+            <!-- 角色列表 (主页) -->
+            <div v-if="currentTab === 'home'" class="character-list">
+              <div
+                v-for="character in filteredCharacters"
+                :key="character.id"
+                class="character-item"
+                :class="{ active: selectedCharacter && selectedCharacter.id === character.id }"
+                @click="selectCharacter(character)"
+              >
+                <div class="character-avatar">
+                  <img :src="character.avatar" :alt="character.name">
+                  <div class="online-indicator" :class="{ online: character.online }"></div>
+                </div>
+                <div class="character-info">
+                  <div class="character-name">{{ character.name }}</div>
+                  <div class="character-desc">{{ character.description }}</div>
+                  <div class="last-message" v-if="character.lastMessage">
+                    {{ character.lastMessage }}
+                  </div>
+                </div>
+                <div class="character-meta">
+                  <div class="message-time" v-if="character.lastTime">
+                    {{ formatTime(character.lastTime) }}
+                  </div>
+                  <div v-if="character.voiceDuration" class="voice-duration">
+                    <i class="el-icon-microphone"></i>
+                    {{ character.voiceDuration }}"
+                  </div>
                 </div>
               </div>
-              <div class="character-meta">
-                <div class="message-time" v-if="character.lastTime">
-                  {{ formatTime(character.lastTime) }}
+            </div>
+
+            <!-- 权益页面 -->
+            <div v-if="currentTab === 'benefits'" class="sidebar-benefits">
+              <div class="benefits-header">
+                <h3>会员权益</h3>
+              </div>
+              <div class="user-level-info">
+                <div class="level-badge">{{ userLevel }}</div>
+                <div class="level-name">{{ userLevelName }}</div>
+                <div class="upgrade-btn" @click="showUpgrade">
+                  <i class="el-icon-top"></i>
+                  升级
                 </div>
-                <div v-if="character.voiceDuration" class="voice-duration">
-                  <i class="el-icon-microphone"></i>
-                  {{ character.voiceDuration }}"
+              </div>
+              <div class="benefits-stats">
+                <div class="stat-item">
+                  <div class="stat-label">每日对话</div>
+                  <div class="stat-value">{{ dailyChats }}/{{ maxDailyChats }}</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-label">语音功能</div>
+                  <div class="stat-value">{{ hasVoiceAccess ? '已开启' : '未开启' }}</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-label">图片生成</div>
+                  <div class="stat-value">{{ hasImageAccess ? '已开启' : '未开启' }}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 个人资料页面 -->
+            <div v-if="currentTab === 'profile'" class="sidebar-profile">
+              <div class="profile-header">
+                <h3>个人中心</h3>
+              </div>
+              <div class="user-card">
+                <div class="user-avatar">
+                  <img :src="userInfo.avatar || defaultAvatar" :alt="userInfo.name">
+                </div>
+                <div class="user-info">
+                  <div class="user-name">{{ userInfo.username || userInfo.name }}</div>
+                  <div class="user-id">ID: {{ userInfo.userId || '123456' }}</div>
+                  <div class="user-level">{{ userLevelName }}</div>
+                </div>
+              </div>
+              <div class="profile-menu">
+                <div class="menu-item" @click="editProfile">
+                  <i class="el-icon-edit"></i>
+                  <span>编辑资料</span>
+                </div>
+                <div class="menu-item" @click="viewHistory">
+                  <i class="el-icon-time"></i>
+                  <span>聊天记录</span>
+                </div>
+                <div class="menu-item" @click="viewFavorites">
+                  <i class="el-icon-star-on"></i>
+                  <span>我的收藏</span>
+                </div>
+                <div class="menu-item" @click="contactSupport">
+                  <i class="el-icon-service"></i>
+                  <span>客服支持</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 设置页面 -->
+            <div v-if="currentTab === 'settings'" class="sidebar-settings">
+              <div class="settings-header">
+                <h3>设置</h3>
+              </div>
+              <div class="settings-groups">
+                <div class="settings-group">
+                  <div class="group-title">聊天设置</div>
+                  <div class="setting-item">
+                    <span>语音功能</span>
+                    <el-switch v-model="settings.voiceEnabled" size="mini"></el-switch>
+                  </div>
+                  <div class="setting-item">
+                    <span>消息通知</span>
+                    <el-switch v-model="settings.notificationEnabled" size="mini"></el-switch>
+                  </div>
+                  <div class="setting-item">
+                    <span>深色模式</span>
+                    <el-switch v-model="settings.darkMode" size="mini"></el-switch>
+                  </div>
+                </div>
+                <div class="settings-group">
+                  <div class="group-title">隐私设置</div>
+                  <div class="setting-item">
+                    <span>聊天记录加密</span>
+                    <el-switch v-model="settings.encryptChats" size="mini"></el-switch>
+                  </div>
+                  <div class="setting-item">
+                    <span>自动清理记录</span>
+                    <el-switch v-model="settings.autoCleanChats" size="mini"></el-switch>
+                  </div>
+                </div>
+                <div class="settings-group">
+                  <div class="group-title">关于</div>
+                  <div class="menu-item" @click="showAbout">
+                    <span>关于QIQI PLAY</span>
+                    <i class="el-icon-arrow-right"></i>
+                  </div>
+                  <div class="menu-item" @click="showPrivacy">
+                    <span>隐私政策</span>
+                    <i class="el-icon-arrow-right"></i>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <div class="sidebar-footer">
-            <el-button type="primary" icon="el-icon-plus" @click="showCreateCharacter = true">
-              创建角色
-            </el-button>
+          <!-- 桌面端导航栏 -->
+          <div class="sidebar-navigation">
+            <div class="nav-items">
+              <div
+                class="nav-item"
+                :class="{ active: currentTab === 'home' }"
+                @click="switchTab('home')"
+              >
+                <i class="el-icon-chat-line-round"></i>
+                <span>主页</span>
+              </div>
+              <div
+                class="nav-item"
+                :class="{ active: currentTab === 'benefits' }"
+                @click="switchTab('benefits')"
+              >
+                <i class="el-icon-medal"></i>
+                <span>权益</span>
+              </div>
+              <div
+                class="nav-item"
+                :class="{ active: currentTab === 'profile' }"
+                @click="switchTab('profile')"
+              >
+                <i class="el-icon-user"></i>
+                <span>我的</span>
+              </div>
+              <div
+                class="nav-item"
+                :class="{ active: currentTab === 'settings' }"
+                @click="switchTab('settings')"
+              >
+                <i class="el-icon-setting"></i>
+                <span>设置</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -1512,18 +1658,314 @@ export default {
       }
     }
 
-    .sidebar-footer {
-      padding: 16px;
+    // 左侧内容区域
+    .sidebar-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0;
+    }
+
+    // 侧边栏导航
+    .sidebar-navigation {
+      padding: 16px 12px;
       border-top: 1px solid #f0f0f0;
+      background: white;
 
-      .el-button {
-        width: 100%;
+      .nav-items {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+
+        .nav-item {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          padding: 8px 4px;
+          border-radius: 8px;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          font-size: 12px;
+          color: #666;
+
+          &:hover {
+            background: #f8f9fa;
+            color: #333;
+          }
+
+          &.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+
+            i {
+              color: white;
+            }
+          }
+
+          i {
+            font-size: 16px;
+            margin-bottom: 4px;
+            color: #666;
+            transition: color 0.3s ease;
+          }
+
+          span {
+            font-weight: 500;
+          }
+        }
+      }
+    }
+
+    // 侧边栏权益页面
+    .sidebar-benefits {
+      padding: 20px;
+
+      .benefits-header {
+        margin-bottom: 20px;
+
+        h3 {
+          font-size: 16px;
+          color: #333;
+          margin: 0;
+          font-weight: 600;
+        }
+      }
+
+      .user-level-info {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border: none;
-        font-weight: 600;
+        border-radius: 12px;
+        padding: 16px;
+        color: white;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
 
-        &:hover {
-          opacity: 0.9;
+        .level-badge {
+          background: rgba(255, 255, 255, 0.2);
+          padding: 4px 8px;
+          border-radius: 8px;
+          font-size: 12px;
+          margin-right: 8px;
+        }
+
+        .level-name {
+          font-size: 14px;
+          font-weight: 600;
+          flex: 1;
+        }
+
+        .upgrade-btn {
+          background: rgba(255, 255, 255, 0.2);
+          padding: 6px 12px;
+          border-radius: 16px;
+          cursor: pointer;
+          font-size: 12px;
+          display: flex;
+          align-items: center;
+
+          &:hover {
+            background: rgba(255, 255, 255, 0.3);
+          }
+
+          i {
+            margin-right: 4px;
+          }
+        }
+      }
+
+      .benefits-stats {
+        .stat-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 12px 0;
+          border-bottom: 1px solid #f0f0f0;
+
+          &:last-child {
+            border-bottom: none;
+          }
+
+          .stat-label {
+            font-size: 13px;
+            color: #666;
+          }
+
+          .stat-value {
+            font-size: 13px;
+            color: #333;
+            font-weight: 500;
+          }
+        }
+      }
+    }
+
+    // 侧边栏个人资料页面
+    .sidebar-profile {
+      padding: 20px;
+
+      .profile-header {
+        margin-bottom: 20px;
+
+        h3 {
+          font-size: 16px;
+          color: #333;
+          margin: 0;
+          font-weight: 600;
+        }
+      }
+
+      .user-card {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+
+        .user-avatar {
+          width: 48px;
+          height: 48px;
+          border-radius: 50%;
+          overflow: hidden;
+          margin-right: 12px;
+
+          img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+          }
+        }
+
+        .user-info {
+          flex: 1;
+
+          .user-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+          }
+
+          .user-id {
+            font-size: 11px;
+            color: #999;
+            margin-bottom: 6px;
+          }
+
+          .user-level {
+            font-size: 11px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 8px;
+            display: inline-block;
+          }
+        }
+      }
+
+      .profile-menu {
+        .menu-item {
+          display: flex;
+          align-items: center;
+          padding: 12px 0;
+          cursor: pointer;
+          border-bottom: 1px solid #f0f0f0;
+          transition: color 0.3s ease;
+
+          &:last-child {
+            border-bottom: none;
+          }
+
+          &:hover {
+            color: #667eea;
+          }
+
+          i {
+            margin-right: 8px;
+            width: 16px;
+            text-align: center;
+          }
+
+          span {
+            font-size: 13px;
+          }
+        }
+      }
+    }
+
+    // 侧边栏设置页面
+    .sidebar-settings {
+      padding: 20px;
+
+      .settings-header {
+        margin-bottom: 20px;
+
+        h3 {
+          font-size: 16px;
+          color: #333;
+          margin: 0;
+          font-weight: 600;
+        }
+      }
+
+      .settings-groups {
+        .settings-group {
+          margin-bottom: 24px;
+
+          &:last-child {
+            margin-bottom: 0;
+          }
+
+          .group-title {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 12px;
+            font-weight: 600;
+          }
+
+          .setting-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #f8f8f8;
+
+            &:last-child {
+              border-bottom: none;
+            }
+
+            span {
+              font-size: 13px;
+              color: #333;
+            }
+          }
+
+          .menu-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0;
+            cursor: pointer;
+            border-bottom: 1px solid #f8f8f8;
+            transition: color 0.3s ease;
+
+            &:last-child {
+              border-bottom: none;
+            }
+
+            &:hover {
+              color: #667eea;
+            }
+
+            span {
+              font-size: 13px;
+            }
+
+            i {
+              font-size: 12px;
+              color: #ccc;
+            }
+          }
         }
       }
     }
