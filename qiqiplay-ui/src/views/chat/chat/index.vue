@@ -51,6 +51,7 @@
           @send-message="sendMessage"
           @typing="handleTyping"
           @toggle-voice="handleToggleVoice"
+          @send-audio="sendAudioMessage"
         />
       </div>
     </div>
@@ -122,6 +123,7 @@ import MessageArea from './components/MessageArea'
 import InputArea from './components/InputArea'
 import MobileNavigation from '../components/MobileNavigation'
 import { getChatRoleList } from '@/api/chat/roles'
+import { textChat, audioChat } from '@/api/chat/chat'
 
 export default {
   name: 'MobileChatApp',
@@ -268,7 +270,7 @@ export default {
       console.log('设置消息数据:', mockMessages)
     },
 
-    sendMessage(content) {
+    async sendMessage(content) {
       console.log('发送消息:', content)
       const newMessage = {
         id: Date.now(),
@@ -278,21 +280,42 @@ export default {
       }
 
       this.currentMessages.push(newMessage)
+      this.isTyping = true
 
-      // 模拟AI回复
-      setTimeout(() => {
-        this.isTyping = true
-        setTimeout(() => {
-          const aiReply = {
-            id: Date.now() + 1,
-            content: `我收到了你的消息："${content}"，让我想想怎么回复...`,
-            isUser: false,
-            time: new Date()
-          }
-          this.currentMessages.push(aiReply)
-          this.isTyping = false
-        }, 2000)
-      }, 500)
+      try {
+        // 调用真实的文本聊天API
+        const response = await textChat({
+          text: content,
+          role: this.selectedCharacter.name
+        })
+
+        console.log('API响应:', response)
+
+        // 添加AI回复消息
+        const aiReply = {
+          id: Date.now() + 1,
+          content: response.data.reply || '抱歉，我现在无法回复。',
+          isUser: false,
+          time: new Date(),
+          audioFile: response.data.audioFile || null,
+          isPlaying: false
+        }
+        this.currentMessages.push(aiReply)
+      } catch (error) {
+        console.error('发送消息失败:', error)
+        // 错误处理 - 添加错误消息
+        const errorReply = {
+          id: Date.now() + 1,
+          content: '抱歉，发送消息失败，请稍后重试。',
+          isUser: false,
+          time: new Date(),
+          isError: true
+        }
+        this.currentMessages.push(errorReply)
+        this.$message.error('发送消息失败：' + (error.message || '网络错误'))
+      } finally {
+        this.isTyping = false
+      }
     },
 
     handleTyping() {
@@ -300,8 +323,70 @@ export default {
     },
 
     handleToggleVoice(isActive) {
-      this.$message.info(isActive ? '语音模式已开启' : '语音模式已关闭')
+      // 录音状态切换处理
+      if (isActive) {
+        console.log('开始录音...')
+      } else {
+        console.log('录音结束')
+      }
     },
+
+    async sendAudioMessage(audioBlob) {
+      console.log('发送语音消息:', audioBlob)
+
+      // 添加用户语音消息到聊天记录
+      const userAudioMessage = {
+        id: Date.now(),
+        content: '[语音消息]',
+        isUser: true,
+        time: new Date(),
+        isAudio: true,
+        audioBlob: audioBlob
+      }
+      this.currentMessages.push(userAudioMessage)
+      this.isTyping = true
+
+      try {
+        // 创建FormData发送文件
+        const formData = new FormData()
+        formData.append('audio', audioBlob, 'recording.wav')
+        formData.append('role', this.selectedCharacter.name)
+
+        console.log('发送音频文件，大小:', audioBlob.size)
+        console.log('FormData内容:', formData.get('audio'), formData.get('role'))
+
+        // 调用语音聊天API
+        const response = await audioChat(formData)
+
+        console.log('语音API响应:', response)
+
+        // 添加AI回复消息
+        const aiReply = {
+          id: Date.now() + 1,
+          content: response.data.reply || '抱歉，我现在无法回复。',
+          isUser: false,
+          time: new Date(),
+          audioFile: response.data.audioFile || null,
+          isPlaying: false
+        }
+        this.currentMessages.push(aiReply)
+      } catch (error) {
+        console.error('发送语音消息失败:', error)
+        // 错误处理
+        const errorReply = {
+          id: Date.now() + 1,
+          content: '抱歉，语音消息发送失败，请稍后重试。',
+          isUser: false,
+          time: new Date(),
+          isError: true
+        }
+        this.currentMessages.push(errorReply)
+        this.$message.error('发送语音消息失败：' + (error.message || '网络错误'))
+      } finally {
+        this.isTyping = false
+      }
+    },
+
 
     // 搜索功能
     handleSearch() {

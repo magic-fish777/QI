@@ -7,9 +7,13 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.core.io.ByteArrayResource;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Base64;
 import com.qiqiplay.web.controller.chat.domain.TextChatRequest;
 import com.qiqiplay.web.controller.chat.domain.AudioChatRequest;
 import com.qiqiplay.web.controller.chat.domain.ChatResponse;
@@ -63,11 +67,26 @@ public class ChatServiceImpl implements IChatService
     {
         try
         {
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
+            // 将base64编码的音频数据解码为字节数组
+            byte[] audioBytes = Base64.getDecoder().decode(request.getAudio());
 
-            String requestBody = objectMapper.writeValueAsString(request);
-            HttpEntity<String> entity = new HttpEntity<>(requestBody, headers);
+            // 创建ByteArrayResource来包装音频数据
+            ByteArrayResource audioResource = new ByteArrayResource(audioBytes) {
+                @Override
+                public String getFilename() {
+                    return "audio.wav"; // 提供文件名
+                }
+            };
+
+            // 构建multipart/form-data请求
+            MultiValueMap<String, Object> parts = new LinkedMultiValueMap<>();
+            parts.add("audio", audioResource);
+            parts.add("role", request.getRole());
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+
+            HttpEntity<MultiValueMap<String, Object>> entity = new HttpEntity<>(parts, headers);
 
             ResponseEntity<String> response = restTemplate.exchange(
                 AUDIO_CHAT_URL,
@@ -92,7 +111,7 @@ public class ChatServiceImpl implements IChatService
         chatResponse.setRole(jsonNode.path("role").asText());
         chatResponse.setUser(jsonNode.path("user").asText());
         chatResponse.setReply(jsonNode.path("reply").asText());
-        chatResponse.setAudioFile(jsonNode.path("audio_file").asText());
+        chatResponse.setAudioFile(jsonNode.path("audioFile").asText());
 
         return chatResponse;
     }

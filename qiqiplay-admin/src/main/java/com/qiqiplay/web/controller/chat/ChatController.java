@@ -1,10 +1,14 @@
 package com.qiqiplay.web.controller.chat;
 
+import com.qiqiplay.common.annotation.Anonymous;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+import java.util.Base64;
 import com.qiqiplay.common.core.controller.BaseController;
 import com.qiqiplay.common.core.domain.AjaxResult;
 import com.qiqiplay.web.controller.chat.domain.TextChatRequest;
@@ -17,6 +21,7 @@ import com.qiqiplay.web.controller.chat.service.IChatService;
  *
  * @author qiqiplay
  */
+@Anonymous
 @RestController
 @RequestMapping("/chat")
 public class ChatController extends BaseController
@@ -48,14 +53,23 @@ public class ChatController extends BaseController
     /**
      * 语音聊天接口
      *
-     * @param request 语音聊天请求
+     * @param audioFile 音频文件
+     * @param role 角色名称
      * @return 聊天响应结果
      */
     @PostMapping("/audio")
-    public AjaxResult audioChat(@RequestBody AudioChatRequest request)
+    public AjaxResult audioChat(@RequestParam("audio") MultipartFile audioFile,
+                               @RequestParam("role") String role)
     {
         try
         {
+            // 将音频文件转换为Base64编码
+            byte[] audioBytes = audioFile.getBytes();
+            String audioBase64 = Base64.getEncoder().encodeToString(audioBytes);
+
+            // 创建AudioChatRequest对象
+            AudioChatRequest request = new AudioChatRequest(audioBase64, role);
+
             ChatResponse response = chatService.processAudioChat(request);
             return success(response);
         }

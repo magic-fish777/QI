@@ -394,7 +394,7 @@ export default {
       console.log('==> 已保存登录状态和用户信息:', userInfo)
 
       // 跳转到聊天页面
-      this.$router.push('/ai/chat')
+      this.$router.push('/chat')
     },
 
     async sendEmailCode() {

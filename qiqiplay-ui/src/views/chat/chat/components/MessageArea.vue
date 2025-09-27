@@ -22,7 +22,33 @@
       </div>
       <div class="message-content">
         <div class="message-bubble">
-          {{ message.content }}
+          <span v-if="!message.isAudio">{{ message.content }}</span>
+          <!-- 用户语音消息显示 -->
+          <div v-if="message.isAudio && message.isUser" class="voice-message">
+            <i class="el-icon-microphone"></i>
+            <span>语音消息</span>
+            <el-button
+              type="text"
+              size="mini"
+              :icon="message.isPlaying ? 'el-icon-video-pause' : 'el-icon-video-play'"
+              @click="toggleUserAudio(message)"
+              class="audio-play-btn"
+            >
+              {{ message.isPlaying ? '暂停' : '播放' }}
+            </el-button>
+          </div>
+          <!-- AI回复音频播放按钮 -->
+          <div v-if="message.audioFile && !message.isUser" class="audio-controls">
+            <el-button
+              type="text"
+              size="mini"
+              :icon="message.isPlaying ? 'el-icon-video-pause' : 'el-icon-video-play'"
+              @click="toggleAudio(message)"
+              class="audio-play-btn"
+            >
+              {{ message.isPlaying ? '暂停' : '播放' }}
+            </el-button>
+          </div>
         </div>
         <div class="message-meta">
           <span class="message-time">{{ formatMessageTime(message.time) }}</span>
@@ -71,6 +97,12 @@ export default {
       default: false
     }
   },
+  data() {
+    return {
+      currentAudio: null, // 当前播放的音频对象
+      playingMessageId: null // 当前播放中的消息ID
+    }
+  },
   methods: {
     formatMessageTime(time) {
       return new Date(time).toLocaleTimeString('zh-CN', {
@@ -85,6 +117,129 @@ export default {
           container.scrollTop = container.scrollHeight
         }
       })
+    },
+    toggleAudio(message) {
+      // 如果当前有音频在播放，先停止
+      if (this.currentAudio && !this.currentAudio.paused) {
+        this.currentAudio.pause()
+        this.updatePlayingState(this.playingMessageId, false)
+      }
+
+      // 如果点击的是同一个消息，则停止播放
+      if (this.playingMessageId === message.id) {
+        this.playingMessageId = null
+        this.currentAudio = null
+        return
+      }
+
+      // 播放新的音频
+      this.playAudio(message)
+    },
+    playAudio(message) {
+      try {
+        // 创建新的音频对象
+        this.currentAudio = new Audio(message.audioFile)
+        this.playingMessageId = message.id
+
+        // 设置播放状态
+        this.updatePlayingState(message.id, true)
+
+        // 播放音频
+        this.currentAudio.play()
+
+        // 监听播放结束事件
+        this.currentAudio.addEventListener('ended', () => {
+          this.updatePlayingState(message.id, false)
+          this.playingMessageId = null
+          this.currentAudio = null
+        })
+
+        // 监听播放错误事件
+        this.currentAudio.addEventListener('error', (e) => {
+          console.error('音频播放失败:', e)
+          this.$message.error('音频播放失败')
+          this.updatePlayingState(message.id, false)
+          this.playingMessageId = null
+          this.currentAudio = null
+        })
+
+      } catch (error) {
+        console.error('音频播放异常:', error)
+        this.$message.error('音频播放失败：' + error.message)
+        this.updatePlayingState(message.id, false)
+      }
+    },
+    updatePlayingState(messageId, isPlaying) {
+      // 更新消息的播放状态
+      const message = this.messages.find(msg => msg.id === messageId)
+      if (message) {
+        this.$set(message, 'isPlaying', isPlaying)
+      }
+    },
+    toggleUserAudio(message) {
+      // 如果当前有音频在播放，先停止
+      if (this.currentAudio && !this.currentAudio.paused) {
+        this.currentAudio.pause()
+        this.updatePlayingState(this.playingMessageId, false)
+      }
+
+      // 如果点击的是同一个消息，则停止播放
+      if (this.playingMessageId === message.id) {
+        this.playingMessageId = null
+        this.currentAudio = null
+        return
+      }
+
+      // 播放用户的语音消息
+      this.playUserAudio(message)
+    },
+    playUserAudio(message) {
+      try {
+        // 将Blob转换为可播放的URL
+        const audioUrl = URL.createObjectURL(message.audioBlob)
+
+        // 创建新的音频对象
+        this.currentAudio = new Audio(audioUrl)
+        this.playingMessageId = message.id
+
+        // 设置播放状态
+        this.updatePlayingState(message.id, true)
+
+        // 播放音频
+        this.currentAudio.play()
+
+        // 监听播放结束事件
+        this.currentAudio.addEventListener('ended', () => {
+          this.updatePlayingState(message.id, false)
+          this.playingMessageId = null
+          this.currentAudio = null
+          // 释放URL对象
+          URL.revokeObjectURL(audioUrl)
+        })
+
+        // 监听播放错误事件
+        this.currentAudio.addEventListener('error', (e) => {
+          console.error('用户语音播放失败:', e)
+          this.$message.error('语音播放失败')
+          this.updatePlayingState(message.id, false)
+          this.playingMessageId = null
+          this.currentAudio = null
+          // 释放URL对象
+          URL.revokeObjectURL(audioUrl)
+        })
+
+      } catch (error) {
+        console.error('用户语音播放异常:', error)
+        this.$message.error('语音播放失败：' + error.message)
+        this.updatePlayingState(message.id, false)
+      }
+    }
+  },
+  beforeDestroy() {
+    // 组件销毁时停止音频播放
+    if (this.currentAudio) {
+      this.currentAudio.pause()
+      this.currentAudio = null
     }
   },
   watch: {
@@ -160,6 +315,23 @@ export default {
         max-width: 80%;
         word-wrap: break-word;
         box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+
+        .audio-controls {
+          margin-top: 8px;
+          padding-top: 8px;
+          border-top: 1px solid #f0f0f0;
+
+          .audio-play-btn {
+            color: #667eea;
+            font-size: 12px;
+            padding: 4px 8px;
+
+            &:hover {
+              color: #764ba2;
+              background: rgba(102, 126, 234, 0.1);
+            }
+          }
+        }
       }
 
       .message-meta {

@@ -22,6 +22,11 @@ const service = axios.create({
 
 // request拦截器
 service.interceptors.request.use(config => {
+  // 如果是FormData，删除默认的Content-Type，让浏览器自动设置
+  if (config.data instanceof FormData) {
+    delete config.headers['Content-Type']
+  }
+
   // 是否需要设置 token
   const isToken = (config.headers || {}).isToken === false
   // 是否需要防止数据重复提交
@@ -33,7 +38,8 @@ service.interceptors.request.use(config => {
 
     if (isAiRequest) {
       // AI请求使用localStorage中的token
-      const aiToken = localStorage.getItem('token')
+      const aiToken = localStorage.getItem('chat_token')
+      console.log('==> 已经拿到AI请求的token:', aiToken)
       if (aiToken) {
         config.headers['Authorization'] = 'Bearer ' + aiToken
         console.log('==> AI请求添加token:', aiToken ? '已添加' : '未找到')
@@ -53,6 +59,11 @@ service.interceptors.request.use(config => {
     config.url = url
   }
   if (!isRepeatSubmit && (config.method === 'post' || config.method === 'put')) {
+    // 如果是FormData，跳过防重复提交检查
+    if (config.data instanceof FormData) {
+      return config
+    }
+
     const requestObj = {
       url: config.url,
       data: typeof config.data === 'object' ? JSON.stringify(config.data) : config.data,
@@ -97,7 +108,10 @@ service.interceptors.response.use(res => {
     if (res.request.responseType ===  'blob' || res.request.responseType ===  'arraybuffer') {
       return res.data
     }
-    if (code === 401) {
+    console.log('==> 请求地址:', res.config.url)
+    console.log('==> 请求状态码:', code)
+    console.log('==> 请求返回数据:', res.data)
+    if (code  === 401) {
       // 判断是否为AI请求
       const requestUrl = res.config.url || ''
       const isAiRequest = requestUrl.includes('/chat/') && !requestUrl.includes('/dev-api/system')
@@ -110,7 +124,7 @@ service.interceptors.response.use(res => {
       if (isAiRequest) {
         // AI请求的401处理
         console.log('==> AI请求401错误，清除AI登录状态')
-        localStorage.removeItem('token')
+        localStorage.removeItem('chat_token')
         localStorage.removeItem('isLoggedIn')
         localStorage.removeItem('loginType')
         localStorage.removeItem('userInfo')
