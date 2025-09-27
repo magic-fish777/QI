@@ -26,8 +26,24 @@ service.interceptors.request.use(config => {
   const isToken = (config.headers || {}).isToken === false
   // 是否需要防止数据重复提交
   const isRepeatSubmit = (config.headers || {}).repeatSubmit === false
-  if (getToken() && !isToken) {
-    config.headers['Authorization'] = 'Bearer ' + getToken() // 让每个请求携带自定义token 请根据实际情况自行修改
+
+  if (!isToken) {
+    // 判断是否为AI相关请求
+    const isAiRequest = config.url && config.url.startsWith('/ai/')
+
+    if (isAiRequest) {
+      // AI请求使用localStorage中的token
+      const aiToken = localStorage.getItem('token')
+      if (aiToken) {
+        config.headers['Authorization'] = 'Bearer ' + aiToken
+        console.log('==> AI请求添加token:', aiToken ? '已添加' : '未找到')
+      }
+    } else {
+      // 后台管理请求使用Cookie中的token
+      if (getToken()) {
+        config.headers['Authorization'] = 'Bearer ' + getToken()
+      }
+    }
   }
   // get请求映射params参数
   if (config.method === 'get' && config.params) {
@@ -82,18 +98,37 @@ service.interceptors.response.use(res => {
       return res.data
     }
     if (code === 401) {
-      if (!isRelogin.show) {
-        isRelogin.show = true
-        MessageBox.confirm('登录状态已过期，您可以继续留在该页面，或者重新登录', '系统提示', { confirmButtonText: '重新登录', cancelButtonText: '取消', type: 'warning' }).then(() => {
+      // 判断是否为AI请求
+      const isAiRequest = res.config.url && res.config.url.startsWith('/ai/')
+
+      if (isAiRequest) {
+        // AI请求的401处理
+        console.log('==> AI请求401错误，清除AI登录状态')
+        localStorage.removeItem('token')
+        localStorage.removeItem('isLoggedIn')
+        localStorage.removeItem('loginType')
+        localStorage.removeItem('userInfo')
+
+        // 跳转到AI登录页面
+        if (window.location.pathname !== '/ai/login') {
+          window.location.href = '/ai/login'
+        }
+        return Promise.reject('AI登录状态已过期，请重新登录。')
+      } else {
+        // 后台管理请求的401处理
+        if (!isRelogin.show) {
+          isRelogin.show = true
+          MessageBox.confirm('登录状态已过期，您可以继续留在该页面，或者重新登录', '系统提示', { confirmButtonText: '重新登录', cancelButtonText: '取消', type: 'warning' }).then(() => {
+            isRelogin.show = false
+            store.dispatch('LogOut').then(() => {
+              location.href = '/index'
+            })
+        }).catch(() => {
           isRelogin.show = false
-          store.dispatch('LogOut').then(() => {
-            location.href = '/index'
-          })
-      }).catch(() => {
-        isRelogin.show = false
-      })
-    }
-      return Promise.reject('无效的会话，或者会话已过期，请重新登录。')
+        })
+      }
+        return Promise.reject('无效的会话，或者会话已过期，请重新登录。')
+      }
     } else if (code === 500) {
       Message({ message: msg, type: 'error' })
       return Promise.reject(new Error(msg))

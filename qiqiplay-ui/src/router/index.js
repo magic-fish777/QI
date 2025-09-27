@@ -64,7 +64,7 @@ export const constantRoutes = [
   {
     path: '',
     component: Layout,
-    redirect: 'index',
+    redirect: '/ai/chat',
     children: [
       {
         path: 'index',
@@ -87,6 +87,34 @@ export const constantRoutes = [
         meta: { title: '个人中心', icon: 'user' }
       }
     ]
+  },
+  {
+    path: '/ai/chat',
+    component: () => import('@/views/ai/chat/index'),
+    name: 'Chat',
+    hidden: true,
+    meta: { title: '智能对话' }
+  },
+  {
+    path: '/ai/chat/mobile',
+    component: () => import('@/views/ai/chat/mobile'),
+    name: 'MobileChat',
+    hidden: true,
+    meta: { title: 'QIQI PLAY' }
+  },
+  {
+    path: '/ai/login',
+    component: () => import('@/views/ai/login'),
+    name: 'AILogin',
+    hidden: true,
+    meta: { title: 'QIQI PLAY 登录' }
+  },
+  {
+    path: '/ai/register',
+    component: () => import('@/views/ai/register'),
+    name: 'AIRegister',
+    hidden: true,
+    meta: { title: 'QIQI PLAY 注册' }
   }
 ]
 

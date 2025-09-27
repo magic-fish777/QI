@@ -1,6 +1,7 @@
 package com.qiqiplay.framework.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -34,6 +35,7 @@ public class SecurityConfig
      * 自定义用户认证逻辑
      */
     @Autowired
+    @Qualifier("userDetailsServiceImpl")
     private UserDetailsService userDetailsService;
     
     /**
@@ -112,6 +114,8 @@ public class SecurityConfig
                 permitAllUrl.getUrls().forEach(url -> requests.antMatchers(url).permitAll());
                 // 对于登录login 注册register 验证码captchaImage 允许匿名访问
                 requests.antMatchers("/login", "/register", "/captchaImage").permitAll()
+                    // AI前端认证相关接口允许匿名访问
+                    .antMatchers("/ai/auth/**").permitAll()
                     // 静态资源，可匿名访问
                     .antMatchers(HttpMethod.GET, "/", "/*.html", "/**/*.html", "/**/*.css", "/**/*.js", "/profile/**").permitAll()
                     .antMatchers("/swagger-ui.html", "/swagger-resources/**", "/webjars/**", "/*/api-docs", "/druid/**").permitAll()
