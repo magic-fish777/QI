@@ -114,14 +114,15 @@ service.interceptors.response.use(res => {
     if (code  === 401) {
       // 判断是否为AI请求
       const requestUrl = res.config.url || ''
-      const isAiRequest = requestUrl.includes('/chat/') && !requestUrl.includes('/dev-api/system')
+      const isAiRequest = requestUrl.includes('/chat') && !requestUrl.includes('/dev-api/system')
 
       console.log('==> 401错误调试信息:')
       console.log('==> 请求URL:', requestUrl)
       console.log('==> 是否为chat请求:', isAiRequest)
       console.log('==> 当前页面路径:', window.location.pathname)
-
+      alert(requestUrl);
       if (isAiRequest) {
+        alert('登录状态已过期，请重新登录，是前台登录')
         // AI请求的401处理
         console.log('==> AI请求401错误，清除AI登录状态')
         localStorage.removeItem('chat_token')
@@ -135,6 +136,7 @@ service.interceptors.response.use(res => {
         }
         return Promise.reject('前台登录状态已过期，请重新登录。')
       } else {
+        alert('登录状态已过期，请重新登录，是后台登录')
         // 后台管理请求的401处理
         if (!isRelogin.show) {
           isRelogin.show = true
