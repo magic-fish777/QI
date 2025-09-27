@@ -79,41 +79,6 @@
               </div>
             </div>
 
-            <!-- 桌面端导航菜单 -->
-            <div class="desktop-navigation">
-              <div
-                class="nav-menu-item"
-                :class="{ active: currentTab === 'home' }"
-                @click="switchTab('home')"
-              >
-                <i class="el-icon-chat-line-round"></i>
-                <span>聊天</span>
-              </div>
-              <div
-                class="nav-menu-item"
-                :class="{ active: currentTab === 'benefits' }"
-                @click="switchTab('benefits')"
-              >
-                <i class="el-icon-medal"></i>
-                <span>权益</span>
-              </div>
-              <div
-                class="nav-menu-item"
-                :class="{ active: currentTab === 'profile' }"
-                @click="switchTab('profile')"
-              >
-                <i class="el-icon-user"></i>
-                <span>我的</span>
-              </div>
-              <div
-                class="nav-menu-item"
-                :class="{ active: currentTab === 'settings' }"
-                @click="switchTab('settings')"
-              >
-                <i class="el-icon-setting"></i>
-                <span>设置</span>
-              </div>
-            </div>
 
             <div class="search-section">
               <div class="search-input">
@@ -161,10 +126,8 @@
           </div>
         </div>
 
-        <!-- 右侧内容区域 -->
-        <div class="main-content">
-          <!-- 聊天界面 -->
-          <div v-if="currentTab === 'home'" class="chat-section">
+        <!-- 右侧主聊天区域 -->
+        <div class="main-chat">
             <div v-if="!selectedCharacter" class="welcome-screen">
               <div class="welcome-content">
                 <i class="el-icon-chat-line-round"></i>
@@ -264,7 +227,6 @@
                 ></el-button>
               </div>
             </div>
-          </div>
         </div>
       </div>
 
@@ -608,6 +570,7 @@
           </div>
         </div>
       </div>
+    </div>
     </div>
 
     <!-- 搜索弹窗 -->
