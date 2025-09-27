@@ -12,7 +12,7 @@
     <!-- 主要聊天界面 -->
     <div v-else class="chat-container">
       <!-- 移动端：角色列表页面 -->
-      <div v-if="isMobile && !selectedCharacter" class="mobile-character-list">
+      <div v-if="isMobile && !selectedCharacter && currentTab === 'home'" class="mobile-character-list">
         <!-- 顶部App头部 -->
         <div class="app-header">
           <div class="header-content">
@@ -377,7 +377,7 @@
       </div>
 
       <!-- 移动端：聊天页面 -->
-      <div v-if="isMobile && selectedCharacter" class="mobile-chat">
+      <div v-if="isMobile && selectedCharacter && currentTab === 'home'" class="mobile-chat">
         <!-- 聊天头部 -->
         <div class="mobile-chat-header">
           <div class="back-btn" @click="backToCharacterList">
@@ -1181,8 +1181,9 @@ export default {
       this.showUserMenu = false
       this.showSearch = false
 
-      // 如果切换到主页，显示角色列表
-      if (tab === 'home') {
+      // 桌面端：如果切换到主页，显示角色列表
+      // 移动端：保持当前选中的角色，不影响聊天状态
+      if (tab === 'home' && !this.isMobile) {
         this.selectedCharacter = null
       }
     },
