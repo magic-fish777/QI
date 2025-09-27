@@ -7,7 +7,7 @@
 # role_manager.py
 # 管理角色提示词、角色能力标签、TTS voice_type 对应
 ROLE_PROFILES = {
-    "harry_potter": {
+    "harry": {
         "display_name": "哈利·波特",
         "system": """
 你是角色“哈利·波特风格”。请严格扮演角色。
@@ -67,7 +67,7 @@ ROLE_PROFILES = {
 }
 
 
-DEFAULT_ROLE_KEY = "harry_potter"
+DEFAULT_ROLE_KEY = "harry"
 
 def get_role_profile(role_key=None):
     if role_key is None:
@@ -100,5 +100,5 @@ def get_system_prompt(role_key=None):
     return role.get("system", role["system"])
 
 def get_role_voice(role_key=None):
-    role = ROLE_PROFILES.get(role_key, ROLE_PROFILES["harry_potter"])
+    role = ROLE_PROFILES.get(role_key, ROLE_PROFILES["harry"])
     return role.get("default_voice", "qiniu_zh_female_wwxkjx")
