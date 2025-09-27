@@ -45,6 +45,7 @@
           :user-avatar="userInfo.avatar || defaultAvatar"
           :is-typing="isTyping"
         />
+        <!-- InputArea 现在是固定定位，在底部导航栏上方 -->
         <InputArea
           :disabled="isTyping"
           @send-message="sendMessage"
@@ -404,10 +405,17 @@ export default {
 }
 
 .chat-page {
-  height: calc(100vh - 80px);
+  height: calc(100vh - 80px); /* 减去底部导航栏高度 */
   display: flex;
   flex-direction: column;
   background: white;
+
+  /* MessageArea 需要减去ChatHeader和InputArea的高度 */
+  :deep(.messages-area) {
+    height: calc(100vh - 80px - 70px - 100px); /* 底部导航 + 聊天头部 + 输入区域 */
+    max-height: calc(100vh - 80px - 70px - 100px);
+    overflow-y: auto;
+  }
 }
 
 // 弹窗样式

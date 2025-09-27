@@ -1,17 +1,13 @@
 <template>
   <div class="input-area">
-    <!-- 工具栏 -->
-    <div class="input-tools">
-      <el-button
-        type="text"
-        icon="el-icon-microphone"
-        :class="{ active: isVoiceMode }"
-        @click="toggleVoiceMode"
-      ></el-button>
-    </div>
-
-    <!-- 输入框 -->
+    <!-- 输入框区域 - 一行布局 -->
     <div class="input-wrapper">
+      <!-- 语音按钮 -->
+      <div class="voice-btn" :class="{ active: isVoiceMode }" @click="toggleVoiceMode">
+        <i class="el-icon-microphone"></i>
+      </div>
+
+      <!-- 输入框 -->
       <textarea
         v-model="inputMessage"
         placeholder="输入消息..."
@@ -21,6 +17,8 @@
         class="message-input"
         ref="messageInput"
       ></textarea>
+
+      <!-- 发送按钮 -->
       <div class="send-btn" @click="sendMessage" :class="{ disabled: !canSend }">
         <i class="el-icon-position"></i>
       </div>
@@ -95,30 +93,55 @@ export default {
 
 <style lang="scss" scoped>
 .input-area {
+  position: fixed;
+  bottom: 80px; /* 底部导航栏高度 */
+  left: 0;
+  right: 0;
   padding: 12px 16px;
   background: white;
   border-top: 1px solid #f0f0f0;
-
-  .input-tools {
-    display: flex;
-    margin-bottom: 8px;
-
-    .el-button {
-      padding: 8px;
-      margin-right: 8px;
-
-      &.active {
-        color: #667eea;
-      }
-    }
-  }
+  z-index: 999;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
 
   .input-wrapper {
     display: flex;
     align-items: flex-end;
     background: #f8f9fa;
-    border-radius: 20px;
+    border-radius: 25px;
     padding: 8px;
+    gap: 8px; /* 元素间距 */
+
+    .voice-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      flex-shrink: 0; /* 防止压缩 */
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+      &:hover {
+        background: #f0f0f0;
+      }
+
+      &.active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+        i {
+          color: white;
+        }
+      }
+
+      i {
+        font-size: 18px;
+        color: #666;
+        transition: color 0.3s ease;
+      }
+    }
 
     .message-input {
       flex: 1;
@@ -126,34 +149,56 @@ export default {
       background: transparent;
       resize: none;
       font-size: 14px;
-      padding: 6px 12px;
+      padding: 8px 12px;
       max-height: 80px;
       outline: none;
       font-family: inherit;
       line-height: 1.4;
+      min-height: 20px; /* 最小高度 */
     }
 
     .send-btn {
-      width: 32px;
-      height: 32px;
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      margin-left: 8px;
       transition: all 0.3s ease;
+      flex-shrink: 0; /* 防止压缩 */
 
       &.disabled {
         background: #ccc;
         cursor: not-allowed;
       }
 
+      &:hover:not(.disabled) {
+        transform: scale(1.05);
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+      }
+
       i {
         color: white;
         font-size: 16px;
       }
+    }
+  }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .input-area {
+    padding: 8px 12px;
+  }
+}
+
+/* 确保在小屏幕设备上的表现 */
+@media (max-height: 600px) {
+  .input-area {
+    .input-tools {
+      margin-bottom: 4px;
     }
   }
 }
