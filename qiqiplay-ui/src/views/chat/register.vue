@@ -305,8 +305,8 @@ export default {
     // 检查本地登录状态（不调用API）
     checkLocalLoginStatus() {
       try {
-        const token = localStorage.getItem('ai_token')
-        const isLoggedIn = localStorage.getItem('ai_isLoggedIn')
+        const token = localStorage.getItem('chat_token')
+        const isLoggedIn = localStorage.getItem('chat_isLoggedIn')
 
         console.log('==> 注册页面检查本地登录状态, token:', token ? '存在' : '不存在', ', isLoggedIn:', isLoggedIn)
 
@@ -316,7 +316,7 @@ export default {
           this.$message.success('检测到已登录，正在跳转...')
 
           // 直接跳转，让聊天页面来验证token有效性
-          this.$router.push('/ai/chat')
+          this.$router.push('/chat')
         }
       } catch (error) {
         console.log('==> 检查本地登录状态失败:', error.message)
@@ -325,8 +325,8 @@ export default {
 
     // 清除登录状态
     clearLoginStatus() {
-      localStorage.removeItem('ai_token')
-      localStorage.removeItem('ai_isLoggedIn')
+      localStorage.removeItem('chat_token')
+      localStorage.removeItem('chat_isLoggedIn')
       localStorage.removeItem('loginType')
       localStorage.removeItem('userInfo')
       console.log('==> 已清除登录状态')
@@ -409,7 +409,7 @@ export default {
           this.$message.success('注册成功！')
           // 跳转到登录页面
           setTimeout(() => {
-            this.$router.push('/ai/login')
+            this.$router.push('/chat/login')
           }, 1500)
         } else {
           this.$message.error(response.msg || '注册失败')
@@ -434,7 +434,7 @@ export default {
       }))
 
       // 跳转到聊天页面
-      this.$router.push('/ai/chat')
+      this.$router.push('/chat')
     },
 
     // 第三方注册
@@ -444,7 +444,7 @@ export default {
 
     // 跳转到登录页面
     goToLogin() {
-      this.$router.push('/ai/login')
+      this.$router.push('/chat/login')
     },
 
     // 显示用户协议

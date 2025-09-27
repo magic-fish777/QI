@@ -102,22 +102,8 @@ import { encrypt, decrypt } from '@/utils/jsencrypt'
 export default {
   name: "Login",
   data() {
-    const validateUsername = (rule, value, callback) => {
-      if (value.length < 2) {
-        callback(new Error("用户账户长度最少为2个字符"));
-      } else {
-        callback();
-      }
-    };
-    const validatePassword = (rule, value, callback) => {
-      if (value.length < 3) {
-        callback(new Error("用户密码长度最少为3个字符"));
-      } else {
-        callback();
-      }
-    };
     return {
-      title: this.$store.state.settings.title,
+      title: process.env.VUE_APP_TITLE,
       codeUrl: "",
       loginForm: {
         username: "admin",
@@ -128,12 +114,12 @@ export default {
       },
       loginRules: {
         username: [
-          { required: true, trigger: "blur", validator: validateUsername }
+          { required: true, trigger: "blur", message: "请输入您的账号" }
         ],
         password: [
-          { required: true, trigger: "blur", validator: validatePassword }
+          { required: true, trigger: "blur", message: "请输入您的密码" }
         ],
-        code: [{ required: true, trigger: "change", message: "验证码不能为空" }]
+        code: [{ required: true, trigger: "change", message: "请输入验证码" }]
       },
       loading: false,
       // 验证码开关
@@ -141,66 +127,66 @@ export default {
       // 注册开关
       register: false,
       redirect: undefined
-    };
+    }
   },
   watch: {
     $route: {
       handler: function(route) {
-        this.redirect = route.query && route.query.redirect;
+        this.redirect = route.query && route.query.redirect
       },
       immediate: true
     }
   },
   created() {
-    this.getCode();
-    this.getCookie();
+    this.getCode()
+    this.getCookie()
   },
   methods: {
     getCode() {
       getCodeImg().then(res => {
-        this.captchaEnabled = res.captchaEnabled === undefined ? true : res.captchaEnabled;
+        this.captchaEnabled = res.captchaEnabled === undefined ? true : res.captchaEnabled
         if (this.captchaEnabled) {
-          this.codeUrl = "data:image/gif;base64," + res.img;
-          this.loginForm.uuid = res.uuid;
+          this.codeUrl = "data:image/gif;base64," + res.img
+          this.loginForm.uuid = res.uuid
         }
-      });
+      })
     },
     getCookie() {
-      const username = Cookies.get("username");
-      const password = Cookies.get("password");
+      const username = Cookies.get("username")
+      const password = Cookies.get("password")
       const rememberMe = Cookies.get('rememberMe')
       this.loginForm = {
         username: username === undefined ? this.loginForm.username : username,
         password: password === undefined ? this.loginForm.password : decrypt(password),
         rememberMe: rememberMe === undefined ? false : Boolean(rememberMe)
-      };
+      }
     },
     handleLogin() {
       this.$refs.loginForm.validate(valid => {
         if (valid) {
-          this.loading = true;
+          this.loading = true
           if (this.loginForm.rememberMe) {
-            Cookies.set("username", this.loginForm.username, { expires: 30 });
-            Cookies.set("password", encrypt(this.loginForm.password), { expires: 30 });
-            Cookies.set('rememberMe', this.loginForm.rememberMe, { expires: 30 });
+            Cookies.set("username", this.loginForm.username, { expires: 30 })
+            Cookies.set("password", encrypt(this.loginForm.password), { expires: 30 })
+            Cookies.set('rememberMe', this.loginForm.rememberMe, { expires: 30 })
           } else {
-            Cookies.remove("username");
-            Cookies.remove("password");
-            Cookies.remove('rememberMe');
+            Cookies.remove("username")
+            Cookies.remove("password")
+            Cookies.remove('rememberMe')
           }
           this.$store.dispatch("Login", this.loginForm).then(() => {
-            this.$router.push({ path: this.redirect || "/admin" }).catch(()=>{});
+            this.$router.push({ path: this.redirect || "/" }).catch(()=>{})
           }).catch(() => {
-            this.loading = false;
+            this.loading = false
             if (this.captchaEnabled) {
-              this.getCode();
+              this.getCode()
             }
-          });
+          })
         }
-      });
+      })
     }
   }
-};
+}
 </script>
 
 <style rel="stylesheet/scss" lang="scss">
@@ -381,34 +367,53 @@ export default {
     transform: translateY(0);
   }
 }
-.el-login-footer {
-  height: 40px;
-  line-height: 40px;
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  text-align: center;
-  color: #fff;
-  font-family: Arial;
-  font-size: 12px;
-  letter-spacing: 1px;
-}
-.login-code-img {
-  height: 38px;
+
+@keyframes slideInLeft {
+  0% {
+    transform: translateX(-100px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
-.login-logo {
-  text-align: center;
-  margin-bottom: 25px;
-  .logo-img {
-    width: 60px;
-    height: 60px;
-    margin-bottom: 10px;
+@keyframes slideInRight {
+  0% {
+    transform: translateX(100px);
+    opacity: 0;
   }
-  .logo-text {
-    font-size: 24px;
-    color: #333;
-    margin: 0;
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* 响应式设计 */
+@media (max-width: 1024px) {
+  .login {
+    flex-direction: column;
+  }
+
+  .left-panel {
+    flex: 0 0 auto;
+    min-height: 300px;
+  }
+
+  .right-panel {
+    flex: 1;
+  }
+
+  .characters {
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .character {
+    width: 100%;
+    max-width: 300px;
   }
 }
 </style>

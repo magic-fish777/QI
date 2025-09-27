@@ -63,8 +63,12 @@ export const constantRoutes = [
   },
   {
     path: '',
+    redirect: '/chat/login'
+  },
+  {
+    path: '/admin',
     component: Layout,
-    redirect: '/ai/chat',
+    redirect: '/admin/index',
     children: [
       {
         path: 'index',
@@ -89,30 +93,44 @@ export const constantRoutes = [
     ]
   },
   {
-    path: '/ai/chat',
-    component: () => import('@/views/ai/chat/index'),
+    path: '/chat',
+    component: () => import('@/views/chat/chat/index'),
     name: 'Chat',
     hidden: true,
     meta: { title: '智能对话' }
   },
   {
-    path: '/ai/chat/mobile',
-    component: () => import('@/views/ai/chat/mobile'),
-    name: 'MobileChat',
+    path: '/chat/benefits',
+    component: () => import('@/views/chat/benefits/index'),
+    name: 'Benefits',
     hidden: true,
-    meta: { title: 'QIQI PLAY' }
+    meta: { title: '会员权益' }
   },
   {
-    path: '/ai/login',
-    component: () => import('@/views/ai/login'),
-    name: 'AILogin',
+    path: '/chat/profile',
+    component: () => import('@/views/chat/profile/index'),
+    name: 'ChatProfile',
+    hidden: true,
+    meta: { title: '个人中心' }
+  },
+  {
+    path: '/chat/settings',
+    component: () => import('@/views/chat/settings/index'),
+    name: 'ChatSettings',
+    hidden: true,
+    meta: { title: '设置' }
+  },
+  {
+    path: '/chat/login',
+    component: () => import('@/views/chat/login'),
+    name: 'ChatLogin',
     hidden: true,
     meta: { title: 'QIQI PLAY 登录' }
   },
   {
-    path: '/ai/register',
-    component: () => import('@/views/ai/register'),
-    name: 'AIRegister',
+    path: '/chat/register',
+    component: () => import('@/views/chat/register'),
+    name: 'ChatRegister',
     hidden: true,
     meta: { title: 'QIQI PLAY 注册' }
   }
@@ -189,7 +207,7 @@ export const dynamicRoutes = [
         meta: { title: '修改生成配置', activeMenu: '/tool/gen' }
       }
     ]
-  }
+  },
 ]
 
 // 防止连续点击多次路由报错

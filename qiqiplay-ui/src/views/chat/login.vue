@@ -230,8 +230,8 @@ export default {
     // 检查本地登录状态（不调用API）
     checkLocalLoginStatus() {
       try {
-        const token = localStorage.getItem('ai_token')
-        const isLoggedIn = localStorage.getItem('ai_isLoggedIn')
+        const token = localStorage.getItem('chat_token')
+        const isLoggedIn = localStorage.getItem('chat_isLoggedIn')
 
         console.log('==> 检查本地登录状态, token:', token ? '存在' : '不存在', ', isLoggedIn:', isLoggedIn)
 
@@ -241,7 +241,7 @@ export default {
           this.$message.success('检测到已登录，正在跳转...')
 
           // 直接跳转，让聊天页面来验证token有效性
-          this.$router.push('/ai/chat')
+          this.$router.push('/chat')
         }
       } catch (error) {
         console.log('==> 检查本地登录状态失败:', error.message)
@@ -251,8 +251,8 @@ export default {
     // 完整的登录状态检查（包含API验证）
     async verifyLoginStatus() {
       try {
-        const token = localStorage.getItem('ai_token')
-        const isLoggedIn = localStorage.getItem('ai_isLoggedIn')
+        const token = localStorage.getItem('chat_token')
+        const isLoggedIn = localStorage.getItem('chat_isLoggedIn')
 
         if (!token || isLoggedIn !== 'true') {
           return false
@@ -269,8 +269,8 @@ export default {
 
     // 清除登录状态
     clearLoginStatus() {
-      localStorage.removeItem('ai_token')
-      localStorage.removeItem('ai_isLoggedIn')
+      localStorage.removeItem('chat_token')
+      localStorage.removeItem('chat_isLoggedIn')
       localStorage.removeItem('loginType')
       localStorage.removeItem('userInfo')
       console.log('==> 已清除登录状态')
@@ -374,12 +374,12 @@ export default {
 
       // 保存token
       if (responseData && responseData.token) {
-        localStorage.setItem('ai_token', responseData.token)
+        localStorage.setItem('chat_token', responseData.token)
         console.log('==> 已保存token', responseData.token)
       }
 
       // 保存登录状态
-      localStorage.setItem('ai_isLoggedIn', 'true')
+      localStorage.setItem('chat_isLoggedIn', 'true')
       localStorage.setItem('loginType', this.loginType)
 
       // 保存用户信息
@@ -450,7 +450,7 @@ export default {
     },
 
     goToRegister() {
-      this.$router.push('/ai/register')
+      this.$router.push('/chat/register')
     },
 
     // API方法

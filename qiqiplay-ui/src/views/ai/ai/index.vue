@@ -34,20 +34,10 @@
         />
       </el-form-item>
       <el-form-item label="是否定制角色" prop="isCustom">
-        <el-input
-          v-model="queryParams.isCustom"
-          placeholder="请输入是否定制角色"
-          clearable
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="创建者ID" prop="creatorUserId">
-        <el-input
-          v-model="queryParams.creatorUserId"
-          placeholder="请输入创建者ID"
-          clearable
-          @keyup.enter.native="handleQuery"
-        />
+        <el-select v-model="queryParams.isCustom" placeholder="请选择是否定制角色" clearable>
+          <el-option label="是" value="1"></el-option>
+          <el-option label="否" value="0"></el-option>
+        </el-select>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
@@ -107,10 +97,26 @@
       <el-table-column label="角色名称" align="center" prop="roleName" />
       <el-table-column label="角色身份描述" align="center" prop="roleIdentity" />
       <el-table-column label="角色分类" align="center" prop="roleCategory" />
-      <el-table-column label="角色头像URL" align="center" prop="roleAvatar" />
-      <el-table-column label="是否定制角色" align="center" prop="isCustom" />
-      <el-table-column label="创建者ID" align="center" prop="creatorUserId" />
-      <el-table-column label="状态" align="center" prop="status" />
+      <el-table-column label="角色头像" align="center" prop="roleAvatar" width="120">
+        <template slot-scope="scope">
+          <el-avatar v-if="scope.row.roleAvatar" :src="scope.row.roleAvatar" size="small"></el-avatar>
+          <span v-else>无头像</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="是否定制角色" align="center" prop="isCustom">
+        <template slot-scope="scope">
+          <el-tag :type="scope.row.isCustom == 1 ? 'success' : 'info'">
+            {{ scope.row.isCustom == 1 ? '是' : '否' }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="状态" align="center" prop="status">
+        <template slot-scope="scope">
+          <el-tag :type="scope.row.status == 0 ? 'success' : 'danger'">
+            {{ scope.row.status == 0 ? '正常' : '停用' }}
+          </el-tag>
+        </template>
+      </el-table-column>
       <el-table-column label="备注" align="center" prop="remark" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
@@ -156,13 +162,16 @@
           <el-input v-model="form.roleAvatar" placeholder="请输入角色头像URL" />
         </el-form-item>
         <el-form-item label="是否定制角色" prop="isCustom">
-          <el-input v-model="form.isCustom" placeholder="请输入是否定制角色" />
+          <el-radio-group v-model="form.isCustom">
+            <el-radio :label="1">是</el-radio>
+            <el-radio :label="0">否</el-radio>
+          </el-radio-group>
         </el-form-item>
-        <el-form-item label="创建者ID" prop="creatorUserId">
-          <el-input v-model="form.creatorUserId" placeholder="请输入创建者ID" />
-        </el-form-item>
-        <el-form-item label="删除标志" prop="delFlag">
-          <el-input v-model="form.delFlag" placeholder="请输入删除标志" />
+        <el-form-item label="状态" prop="status">
+          <el-radio-group v-model="form.status">
+            <el-radio :label="0">正常</el-radio>
+            <el-radio :label="1">停用</el-radio>
+          </el-radio-group>
         </el-form-item>
         <el-form-item label="备注" prop="remark">
           <el-input v-model="form.remark" type="textarea" placeholder="请输入内容" />
@@ -210,7 +219,6 @@ export default {
         roleCategory: null,
         roleAvatar: null,
         isCustom: null,
-        creatorUserId: null,
         status: null,
       },
       // 表单参数
@@ -228,6 +236,12 @@ export default {
         ],
         roleAvatar: [
           { required: true, message: "角色头像URL不能为空", trigger: "blur" }
+        ],
+        isCustom: [
+          { required: true, message: "请选择是否定制角色", trigger: "change" }
+        ],
+        status: [
+          { required: true, message: "请选择状态", trigger: "change" }
         ],
       }
     }
@@ -258,10 +272,8 @@ export default {
         roleIdentity: null,
         roleCategory: null,
         roleAvatar: null,
-        isCustom: null,
-        creatorUserId: null,
-        status: null,
-        delFlag: null,
+        isCustom: 0,
+        status: 0,
         createBy: null,
         createTime: null,
         updateBy: null,
