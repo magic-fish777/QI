@@ -68,8 +68,8 @@ spring:
   # 邮箱配置
   mail:
     host: smtp.qq.com
-    username: 1477296187@qq.com
-    password: fvmpyeuffthvjehh
+    username:
+    password:
     default-encoding: utf-8
     port: 465
     properties:
@@ -157,12 +157,12 @@ aliyun:
   oss:
     # OSS服务端点（需要根据你的bucket所在区域配置）
     endpoint: oss-cn-huhehaote.aliyuncs.com
-    # 访问密钥ID（需要替换为你的实际AccessKey ID）
-    access-key: LTAI5tJUizJ2FeiBL31yy8C4
+    # 访问密钥ID（需要替换为你的实际AccessKey ID）eiBL31y
+    access-key:
     # 访问密钥（需要替换为你的实际AccessKey Secret）
-    secret-key: PhySsWfkAlQECAJ65LdVCXG19ZNYD0
+    secret-key:
     # 存储桶名称
-    bucket-name: xiaomagemall
+    bucket-name:
     # 自定义域名（可选，如果有绑定自定义域名）
     domain:
     # 音频文件存储路径前缀
