@@ -332,6 +332,56 @@ export default {
             }
           }
         }
+
+        .voice-message {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+
+          i {
+            color: #667eea;
+            font-size: 16px;
+          }
+
+          span {
+            color: #666;
+            font-size: 14px;
+          }
+
+          .audio-play-btn {
+            color: #667eea;
+            font-size: 12px;
+            padding: 4px 8px;
+            margin-left: 8px;
+
+            &:hover {
+              color: #764ba2;
+              background: rgba(102, 126, 234, 0.1);
+            }
+          }
+        }
+      }
+
+      // 用户消息中的语音样式
+      &.user-message {
+        .voice-message {
+          i {
+            color: rgba(255, 255, 255, 0.8);
+          }
+
+          span {
+            color: rgba(255, 255, 255, 0.9);
+          }
+
+          .audio-play-btn {
+            color: rgba(255, 255, 255, 0.8);
+
+            &:hover {
+              color: white;
+              background: rgba(255, 255, 255, 0.2);
+            }
+          }
+        }
       }
 
       .message-meta {

@@ -25,6 +25,14 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
+      <el-form-item label="角色Key" prop="roleKey">
+        <el-input
+          v-model="queryParams.roleKey"
+          placeholder="请输入角色Key"
+          clearable
+          @keyup.enter.native="handleQuery"
+        />
+      </el-form-item>
       <el-form-item label="角色头像URL" prop="roleAvatar">
         <el-input
           v-model="queryParams.roleAvatar"
@@ -95,6 +103,7 @@
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="角色ID" align="center" prop="roleId" />
       <el-table-column label="角色名称" align="center" prop="roleName" />
+      <el-table-column label="角色Key" align="center" prop="roleKey" />
       <el-table-column label="角色身份描述" align="center" prop="roleIdentity" />
       <el-table-column label="角色分类" align="center" prop="roleCategory" />
       <el-table-column label="角色头像" align="center" prop="roleAvatar" width="120">
@@ -151,6 +160,9 @@
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="角色名称" prop="roleName">
           <el-input v-model="form.roleName" placeholder="请输入角色名称" />
+        </el-form-item>
+        <el-form-item label="角色Key" prop="roleKey">
+          <el-input v-model="form.roleKey" placeholder="请输入角色Key" />
         </el-form-item>
         <el-form-item label="角色身份描述" prop="roleIdentity">
           <el-input v-model="form.roleIdentity" placeholder="请输入角色身份描述" />
@@ -215,6 +227,7 @@ export default {
         pageNum: 1,
         pageSize: 10,
         roleName: null,
+        roleKey: null,
         roleIdentity: null,
         roleCategory: null,
         roleAvatar: null,
@@ -227,6 +240,9 @@ export default {
       rules: {
         roleName: [
           { required: true, message: "角色名称不能为空", trigger: "blur" }
+        ],
+        roleKey: [
+          { required: true, message: "角色Key不能为空", trigger: "blur" }
         ],
         roleIdentity: [
           { required: true, message: "角色身份描述不能为空", trigger: "blur" }
@@ -269,6 +285,7 @@ export default {
       this.form = {
         roleId: null,
         roleName: null,
+        roleKey: null,
         roleIdentity: null,
         roleCategory: null,
         roleAvatar: null,

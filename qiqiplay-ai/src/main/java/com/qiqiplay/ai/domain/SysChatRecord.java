@@ -56,6 +56,24 @@ public class SysChatRecord extends BaseEntity
     /** 删除标志（0存在 2删除） */
     private String delFlag;
 
+    /** 用户昵称（关联查询） */
+    private String userNickname;
+
+    /** 用户头像（关联查询） */
+    private String userAvatar;
+
+    /** 角色名称（关联查询） */
+    private String roleName;
+
+    /** 角色头像（关联查询） */
+    private String roleAvatar;
+
+    /** 用户输入音频文件URL */
+    private String userAudioFile;
+
+    /** AI回复音频文件URL */
+    private String aiAudioFile;
+
     public void setRecordId(Long recordId) 
     {
         this.recordId = recordId;
@@ -151,9 +169,69 @@ public class SysChatRecord extends BaseEntity
         this.delFlag = delFlag;
     }
 
-    public String getDelFlag() 
+    public String getDelFlag()
     {
         return delFlag;
+    }
+
+    public void setUserNickname(String userNickname)
+    {
+        this.userNickname = userNickname;
+    }
+
+    public String getUserNickname()
+    {
+        return userNickname;
+    }
+
+    public void setUserAvatar(String userAvatar)
+    {
+        this.userAvatar = userAvatar;
+    }
+
+    public String getUserAvatar()
+    {
+        return userAvatar;
+    }
+
+    public void setRoleName(String roleName)
+    {
+        this.roleName = roleName;
+    }
+
+    public String getRoleName()
+    {
+        return roleName;
+    }
+
+    public void setRoleAvatar(String roleAvatar)
+    {
+        this.roleAvatar = roleAvatar;
+    }
+
+    public String getRoleAvatar()
+    {
+        return roleAvatar;
+    }
+
+    public void setUserAudioFile(String userAudioFile)
+    {
+        this.userAudioFile = userAudioFile;
+    }
+
+    public String getUserAudioFile()
+    {
+        return userAudioFile;
+    }
+
+    public void setAiAudioFile(String aiAudioFile)
+    {
+        this.aiAudioFile = aiAudioFile;
+    }
+
+    public String getAiAudioFile()
+    {
+        return aiAudioFile;
     }
 
     @Override

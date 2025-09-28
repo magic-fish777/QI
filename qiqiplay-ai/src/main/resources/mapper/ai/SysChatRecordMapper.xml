@@ -16,29 +16,48 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="chatTime"    column="chat_time"    />
         <result property="delFlag"    column="del_flag"    />
         <result property="createTime"    column="create_time"    />
+        <result property="userNickname"    column="user_nickname"    />
+        <result property="userAvatar"    column="user_avatar"    />
+        <result property="roleName"    column="role_name"    />
+        <result property="roleAvatar"    column="role_avatar"    />
+        <result property="userAudioFile"    column="user_audio_url"    />
+        <result property="aiAudioFile"    column="ai_audio_url"    />
     </resultMap>
 
     <sql id="selectSysChatRecordVo">
-        select record_id, user_id, role_id, user_input_type, user_input_content, ai_reply_content, skill_id, chat_language, chat_time, del_flag, create_time from sys_chat_record
+        select scr.record_id, scr.user_id, scr.role_id, scr.user_input_type, scr.user_input_content,
+               scr.ai_reply_content, scr.skill_id, scr.chat_language, scr.chat_time, scr.del_flag, scr.create_time,
+               sfu.nick_name as user_nickname, sfu.avatar as user_avatar,
+               sra.role_name, sra.role_avatar,
+               user_voice.voice_url as user_audio_url,
+               ai_voice.voice_url as ai_audio_url
+        from sys_chat_record scr
+        left join sys_front_user sfu on scr.user_id = sfu.user_id
+        left join sys_role_ai sra on scr.role_id = sra.role_id
+        left join sys_voice_cache user_voice on scr.record_id = user_voice.record_id and user_voice.voice_type = '1' and user_voice.del_flag = '0'
+        left join sys_voice_cache ai_voice on scr.record_id = ai_voice.record_id and ai_voice.voice_type = '2' and ai_voice.del_flag = '0'
     </sql>
 
     <select id="selectSysChatRecordList" parameterType="SysChatRecord" resultMap="SysChatRecordResult">
         <include refid="selectSysChatRecordVo"/>
-        <where>  
-            <if test="userId != null "> and user_id = #{userId}</if>
-            <if test="roleId != null "> and role_id = #{roleId}</if>
-            <if test="userInputType != null  and userInputType != ''"> and user_input_type = #{userInputType}</if>
-            <if test="userInputContent != null  and userInputContent != ''"> and user_input_content = #{userInputContent}</if>
-            <if test="aiReplyContent != null  and aiReplyContent != ''"> and ai_reply_content = #{aiReplyContent}</if>
-            <if test="skillId != null "> and skill_id = #{skillId}</if>
-            <if test="chatLanguage != null  and chatLanguage != ''"> and chat_language = #{chatLanguage}</if>
-            <if test="chatTime != null "> and chat_time = #{chatTime}</if>
+        <where>
+            <if test="userId != null "> and scr.user_id = #{userId}</if>
+            <if test="roleId != null "> and scr.role_id = #{roleId}</if>
+            <if test="userInputType != null  and userInputType != ''"> and scr.user_input_type = #{userInputType}</if>
+            <if test="userInputContent != null  and userInputContent != ''"> and scr.user_input_content like concat('%', #{userInputContent}, '%')</if>
+            <if test="aiReplyContent != null  and aiReplyContent != ''"> and scr.ai_reply_content like concat('%', #{aiReplyContent}, '%')</if>
+            <if test="skillId != null "> and scr.skill_id = #{skillId}</if>
+            <if test="chatLanguage != null  and chatLanguage != ''"> and scr.chat_language = #{chatLanguage}</if>
+            <if test="chatTime != null "> and date_format(scr.chat_time,'%y-%m-%d') = date_format(#{chatTime},'%y-%m-%d')</if>
+            <if test="userNickname != null  and userNickname != ''"> and sfu.nick_name like concat('%', #{userNickname}, '%')</if>
+            <if test="roleName != null  and roleName != ''"> and sra.role_name like concat('%', #{roleName}, '%')</if>
         </where>
+        order by scr.chat_time desc
     </select>
     
     <select id="selectSysChatRecordByRecordId" parameterType="Long" resultMap="SysChatRecordResult">
         <include refid="selectSysChatRecordVo"/>
-        where record_id = #{recordId}
+        where scr.record_id = #{recordId}
     </select>
 
     <insert id="insertSysChatRecord" parameterType="SysChatRecord" useGeneratedKeys="true" keyProperty="recordId">

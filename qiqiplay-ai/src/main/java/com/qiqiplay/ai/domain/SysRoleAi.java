@@ -22,6 +22,10 @@ public class SysRoleAi extends BaseEntity
     @Excel(name = "角色名称", readConverterExp = "如=哈利波特")
     private String roleName;
 
+    /** 角色key */
+    @Excel(name = "角色key")
+    private String roleKey;
+
     /** 角色身份描述 */
     @Excel(name = "角色身份描述")
     private String roleIdentity;
@@ -64,9 +68,19 @@ public class SysRoleAi extends BaseEntity
         this.roleName = roleName;
     }
 
-    public String getRoleName() 
+    public String getRoleName()
     {
         return roleName;
+    }
+
+    public void setRoleKey(String roleKey)
+    {
+        this.roleKey = roleKey;
+    }
+
+    public String getRoleKey()
+    {
+        return roleKey;
     }
 
     public void setRoleIdentity(String roleIdentity) 

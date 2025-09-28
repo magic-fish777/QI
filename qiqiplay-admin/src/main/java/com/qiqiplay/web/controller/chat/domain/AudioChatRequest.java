@@ -9,6 +9,8 @@ public class AudioChatRequest
 {
     private String audio;
     private String role;
+    private byte[] originalAudioData;
+    private String originalFileName;
 
     public AudioChatRequest()
     {
@@ -38,6 +40,26 @@ public class AudioChatRequest
     public void setRole(String role)
     {
         this.role = role;
+    }
+
+    public byte[] getOriginalAudioData()
+    {
+        return originalAudioData;
+    }
+
+    public void setOriginalAudioData(byte[] originalAudioData)
+    {
+        this.originalAudioData = originalAudioData;
+    }
+
+    public String getOriginalFileName()
+    {
+        return originalFileName;
+    }
+
+    public void setOriginalFileName(String originalFileName)
+    {
+        this.originalFileName = originalFileName;
     }
 
     @Override

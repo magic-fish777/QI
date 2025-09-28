@@ -7,6 +7,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <resultMap type="SysRoleAi" id="SysRoleAiResult">
         <result property="roleId"    column="role_id"    />
         <result property="roleName"    column="role_name"    />
+        <result property="roleKey"    column="role_key"    />
         <result property="roleIdentity"    column="role_identity"    />
         <result property="roleCategory"    column="role_category"    />
         <result property="roleAvatar"    column="role_avatar"    />
@@ -22,13 +23,14 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <sql id="selectSysRoleAiVo">
-        select role_id, role_name, role_identity, role_category, role_avatar, is_custom, creator_user_id, status, del_flag, create_by, create_time, update_by, update_time, remark from sys_role_ai
+        select role_id, role_name, role_key, role_identity, role_category, role_avatar, is_custom, creator_user_id, status, del_flag, create_by, create_time, update_by, update_time, remark from sys_role_ai
     </sql>
 
     <select id="selectSysRoleAiList" parameterType="SysRoleAi" resultMap="SysRoleAiResult">
         <include refid="selectSysRoleAiVo"/>
-        <where>  
+        <where>
             <if test="roleName != null  and roleName != ''"> and role_name like concat('%', #{roleName}, '%')</if>
+            <if test="roleKey != null  and roleKey != ''"> and role_key = #{roleKey}</if>
             <if test="roleIdentity != null  and roleIdentity != ''"> and role_identity = #{roleIdentity}</if>
             <if test="roleCategory != null  and roleCategory != ''"> and role_category = #{roleCategory}</if>
             <if test="roleAvatar != null  and roleAvatar != ''"> and role_avatar = #{roleAvatar}</if>
@@ -47,6 +49,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         insert into sys_role_ai
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="roleName != null and roleName != ''">role_name,</if>
+            <if test="roleKey != null and roleKey != ''">role_key,</if>
             <if test="roleIdentity != null and roleIdentity != ''">role_identity,</if>
             <if test="roleCategory != null and roleCategory != ''">role_category,</if>
             <if test="roleAvatar != null and roleAvatar != ''">role_avatar,</if>
@@ -62,6 +65,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
          </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="roleName != null and roleName != ''">#{roleName},</if>
+            <if test="roleKey != null and roleKey != ''">#{roleKey},</if>
             <if test="roleIdentity != null and roleIdentity != ''">#{roleIdentity},</if>
             <if test="roleCategory != null and roleCategory != ''">#{roleCategory},</if>
             <if test="roleAvatar != null and roleAvatar != ''">#{roleAvatar},</if>
@@ -81,6 +85,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         update sys_role_ai
         <trim prefix="SET" suffixOverrides=",">
             <if test="roleName != null and roleName != ''">role_name = #{roleName},</if>
+            <if test="roleKey != null and roleKey != ''">role_key = #{roleKey},</if>
             <if test="roleIdentity != null and roleIdentity != ''">role_identity = #{roleIdentity},</if>
             <if test="roleCategory != null and roleCategory != ''">role_category = #{roleCategory},</if>
             <if test="roleAvatar != null and roleAvatar != ''">role_avatar = #{roleAvatar},</if>

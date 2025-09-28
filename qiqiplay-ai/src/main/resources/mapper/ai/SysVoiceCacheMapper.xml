@@ -6,7 +6,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     
     <resultMap type="SysVoiceCache" id="SysVoiceCacheResult">
         <result property="voiceId"    column="voice_id"    />
-        <result property="userId"    column="user_id"    />
+        <result property="recordId"    column="record_id"    />
         <result property="voiceType"    column="voice_type"    />
         <result property="relatedRecordId"    column="related_record_id"    />
         <result property="voiceUrl"    column="voice_url"    />
@@ -17,13 +17,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <sql id="selectSysVoiceCacheVo">
-        select voice_id, user_id, voice_type, related_record_id, voice_url, voice_duration, upload_time, expire_time, del_flag from sys_voice_cache
+        select voice_id, record_id, voice_type, related_record_id, voice_url, voice_duration, upload_time, expire_time, del_flag from sys_voice_cache
     </sql>
 
     <select id="selectSysVoiceCacheList" parameterType="SysVoiceCache" resultMap="SysVoiceCacheResult">
         <include refid="selectSysVoiceCacheVo"/>
         <where>  
-            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="recordId != null "> and record_id = #{recordId}</if>
             <if test="voiceType != null  and voiceType != ''"> and voice_type = #{voiceType}</if>
             <if test="relatedRecordId != null "> and related_record_id = #{relatedRecordId}</if>
             <if test="voiceUrl != null  and voiceUrl != ''"> and voice_url = #{voiceUrl}</if>
@@ -41,7 +41,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <insert id="insertSysVoiceCache" parameterType="SysVoiceCache" useGeneratedKeys="true" keyProperty="voiceId">
         insert into sys_voice_cache
         <trim prefix="(" suffix=")" suffixOverrides=",">
-            <if test="userId != null">user_id,</if>
+            <if test="recordId != null">record_id,</if>
             <if test="voiceType != null and voiceType != ''">voice_type,</if>
             <if test="relatedRecordId != null">related_record_id,</if>
             <if test="voiceUrl != null and voiceUrl != ''">voice_url,</if>
@@ -51,7 +51,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="delFlag != null">del_flag,</if>
          </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
-            <if test="userId != null">#{userId},</if>
+            <if test="recordId != null">#{recordId},</if>
             <if test="voiceType != null and voiceType != ''">#{voiceType},</if>
             <if test="relatedRecordId != null">#{relatedRecordId},</if>
             <if test="voiceUrl != null and voiceUrl != ''">#{voiceUrl},</if>
@@ -65,7 +65,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <update id="updateSysVoiceCache" parameterType="SysVoiceCache">
         update sys_voice_cache
         <trim prefix="SET" suffixOverrides=",">
-            <if test="userId != null">user_id = #{userId},</if>
+            <if test="recordId != null">record_id = #{recordId},</if>
             <if test="voiceType != null and voiceType != ''">voice_type = #{voiceType},</if>
             <if test="relatedRecordId != null">related_record_id = #{relatedRecordId},</if>
             <if test="voiceUrl != null and voiceUrl != ''">voice_url = #{voiceUrl},</if>

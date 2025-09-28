@@ -192,6 +192,7 @@ export default {
           this.characters = response.rows.map(role => ({
             id: role.roleId,
             name: role.roleName,
+            roleKey: role.roleKey,
             description: role.roleIdentity || role.roleCategory || '智能助手',
             avatar: role.roleAvatar || this.defaultAvatar,
             online: true,
@@ -286,7 +287,7 @@ export default {
         // 调用真实的文本聊天API
         const response = await textChat({
           text: content,
-          role: this.selectedCharacter.name
+          role: this.selectedCharacter.roleKey || this.selectedCharacter.name
         })
 
         console.log('API响应:', response)
@@ -350,7 +351,7 @@ export default {
         // 创建FormData发送文件
         const formData = new FormData()
         formData.append('audio', audioBlob, 'recording.wav')
-        formData.append('role', this.selectedCharacter.name)
+        formData.append('role', this.selectedCharacter.roleKey || this.selectedCharacter.name)
 
         console.log('发送音频文件，大小:', audioBlob.size)
         console.log('FormData内容:', formData.get('audio'), formData.get('role'))

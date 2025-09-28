@@ -20,9 +20,9 @@ public class SysVoiceCache extends BaseEntity
     /** 语音ID */
     private Long voiceId;
 
-    /** 用户ID（sys_user.user_id） */
-    @Excel(name = "用户ID", readConverterExp = "s=ys_user.user_id")
-    private Long userId;
+    /** 聊天记录ID（sys_chat_record.record_id） */
+    @Excel(name = "聊天记录ID", readConverterExp = "s=ys_chat_record.record_id")
+    private Long recordId;
 
     /** 语音类型（1用户 2AI） */
     @Excel(name = "语音类型", readConverterExp = "1=用户,2=AI")
@@ -63,14 +63,14 @@ public class SysVoiceCache extends BaseEntity
         return voiceId;
     }
 
-    public void setUserId(Long userId) 
+    public void setRecordId(Long recordId)
     {
-        this.userId = userId;
+        this.recordId = recordId;
     }
 
-    public Long getUserId() 
+    public Long getRecordId()
     {
-        return userId;
+        return recordId;
     }
 
     public void setVoiceType(String voiceType) 
@@ -147,7 +147,7 @@ public class SysVoiceCache extends BaseEntity
     public String toString() {
         return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)
             .append("voiceId", getVoiceId())
-            .append("userId", getUserId())
+            .append("recordId", getRecordId())
             .append("voiceType", getVoiceType())
             .append("relatedRecordId", getRelatedRecordId())
             .append("voiceUrl", getVoiceUrl())
