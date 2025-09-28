@@ -12,7 +12,6 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="expireTime"    column="expire_time"    />
         <result property="vipStatus"    column="vip_status"    />
         <result property="customRoleQuota"    column="custom_role_quota"    />
-        <result property="vipLevel"    column="vip_level"    />
         <result property="createBy"    column="create_by"    />
         <result property="createTime"    column="create_time"    />
         <result property="updateBy"    column="update_by"    />
@@ -20,7 +19,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <sql id="selectSysUserVipVo">
-        select vip_id, user_id, vip_type, subscribe_time, expire_time, vip_status, custom_role_quota, vip_level, create_by, create_time, update_by, update_time from sys_user_vip
+        select vip_id, user_id, vip_type, subscribe_time, expire_time, vip_status, custom_role_quota, create_by, create_time, update_by, update_time from sys_user_vip
     </sql>
 
     <select id="selectSysUserVipList" parameterType="SysUserVip" resultMap="SysUserVipResult">
@@ -90,18 +89,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </delete>
 
     <delete id="deleteSysUserVipByVipIds" parameterType="String">
-        delete from sys_user_vip where vip_id in
+        delete from sys_user_vip where vip_id in 
         <foreach item="vipId" collection="array" open="(" separator="," close=")">
             #{vipId}
         </foreach>
     </delete>
-
-    <select id="selectValidVipByUserId" parameterType="Long" resultMap="SysUserVipResult">
-        <include refid="selectSysUserVipVo"/>
-        where user_id = #{userId}
-        and vip_status = '1'
-        and expire_time > NOW()
-        order by expire_time desc
-        limit 1
-    </select>
 </mapper>

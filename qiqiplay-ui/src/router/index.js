@@ -107,13 +107,6 @@ export const constantRoutes = [
     meta: { title: '会员权益' }
   },
   {
-    path: '/chat/membership',
-    component: () => import('@/views/chat/membership/index'),
-    name: 'Membership',
-    hidden: true,
-    meta: { title: '会员充值' }
-  },
-  {
     path: '/chat/profile',
     component: () => import('@/views/chat/profile/index'),
     name: 'ChatProfile',

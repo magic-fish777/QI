@@ -19,77 +19,11 @@
         ref="messageInput"
       ></textarea>
 
-      <!-- 图片生成按钮 -->
-      <div class="image-btn" @click="showImageDialog" title="AI图片生成">
-        <i class="el-icon-picture"></i>
-      </div>
-
       <!-- 发送按钮 -->
       <div class="send-btn" @click="sendMessage" :class="{ disabled: !canSend }">
         <i class="el-icon-position"></i>
       </div>
     </div>
-
-    <!-- 图片生成对话框 -->
-    <el-dialog
-      title="AI图片生成"
-      :visible.sync="imageDialogVisible"
-      width="500px"
-      center
-    >
-      <div class="image-generation-dialog">
-        <el-form ref="imageForm" :model="imageForm" label-width="80px">
-          <el-form-item label="图片描述" required>
-            <el-input
-              v-model="imageForm.prompt"
-              type="textarea"
-              :rows="3"
-              placeholder="请描述您想要生成的图片，例如：一只可爱的小猫在花园里玩耍"
-            ></el-input>
-          </el-form-item>
-          <el-form-item label="图片风格">
-            <el-select v-model="imageForm.style" placeholder="选择风格">
-              <el-option label="写实风格" value="realistic"></el-option>
-              <el-option label="卡通风格" value="cartoon"></el-option>
-              <el-option label="油画风格" value="oil-painting"></el-option>
-              <el-option label="水彩风格" value="watercolor"></el-option>
-              <el-option label="素描风格" value="sketch"></el-option>
-            </el-select>
-          </el-form-item>
-          <el-form-item label="图片尺寸">
-            <el-select v-model="imageForm.size" placeholder="选择尺寸">
-              <el-option label="正方形 (512x512)" value="512x512"></el-option>
-              <el-option label="横图 (768x512)" value="768x512"></el-option>
-              <el-option label="竖图 (512x768)" value="512x768"></el-option>
-            </el-select>
-          </el-form-item>
-        </el-form>
-
-        <!-- 生成结果展示 -->
-        <div v-if="generatedImage" class="generated-image-result">
-          <div class="result-title">生成结果</div>
-          <div class="image-container">
-            <img :src="generatedImage.imageUrl" alt="生成的图片" class="generated-image" />
-            <div class="image-actions">
-              <el-button size="small" @click="downloadImage">下载图片</el-button>
-              <el-button size="small" @click="useImageInChat">发送到聊天</el-button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="imageDialogVisible = false">取消</el-button>
-        <el-button
-          type="primary"
-          @click="generateImage"
-          :loading="imageGenerating"
-          :disabled="!imageForm.prompt"
-        >
-          {{ imageGenerating ? '生成中...' : '生成图片' }}
-        </el-button>
-      </div>
-    </el-dialog>
   </div>
 </template>
 
@@ -110,16 +44,7 @@ export default {
       mediaRecorder: null,
       audioChunks: [],
       recordingTimer: null,
-      recordingTime: 0,
-      // 图片生成相关
-      imageDialogVisible: false,
-      imageGenerating: false,
-      imageForm: {
-        prompt: '',
-        style: 'realistic',
-        size: '512x512'
-      },
-      generatedImage: null
+      recordingTime: 0
     }
   },
   computed: {
@@ -127,7 +52,7 @@ export default {
       return this.inputMessage.trim().length > 0 && !this.disabled
     }
   },
-  emits: ['send-message', 'typing', 'toggle-voice', 'send-audio', 'send-image'],
+  emits: ['send-message', 'typing', 'toggle-voice', 'send-audio'],
   methods: {
     sendMessage() {
       if (!this.canSend) return
@@ -151,21 +76,8 @@ export default {
 
     async toggleVoiceMode() {
       if (!this.isRecording) {
-        // 检查语音功能权限
-        try {
-          const { validateFeaturePermission } = await import('@/api/chat/vip')
-          const response = await validateFeaturePermission('voice')
-
-          if (response.code === 200 && response.data.hasPermission) {
-            // 开始录音
-            await this.startRecording()
-          } else {
-            this.$message.warning(response.data.message || '您的会员等级暂不支持语音功能')
-          }
-        } catch (error) {
-          console.error('检查语音权限失败:', error)
-          this.$message.error('权限检查失败')
-        }
+        // 开始录音
+        await this.startRecording()
       } else {
         // 停止录音
         this.stopRecording()
@@ -278,88 +190,6 @@ export default {
           textarea.style.height = scrollHeight + 'px'
         }
       })
-    },
-
-    // 图片生成相关方法
-    async showImageDialog() {
-      // 检查图片生成权限
-      try {
-        const { validateFeaturePermission } = await import('@/api/chat/vip')
-        const response = await validateFeaturePermission('image')
-
-        if (response.code === 200 && response.data.hasPermission) {
-          this.imageDialogVisible = true
-          this.generatedImage = null
-          this.imageForm = {
-            prompt: '',
-            style: 'realistic',
-            size: '512x512'
-          }
-        } else {
-          this.$message.warning(response.data.message || '您的会员等级暂不支持图片生成功能')
-        }
-      } catch (error) {
-        console.error('检查图片生成权限失败:', error)
-        this.$message.error('权限检查失败')
-      }
-    },
-
-    async generateImage() {
-      if (!this.imageForm.prompt.trim()) {
-        this.$message.warning('请输入图片描述')
-        return
-      }
-
-      this.imageGenerating = true
-
-      try {
-        const { generateImage } = await import('@/api/chat/image')
-
-        const response = await generateImage({
-          prompt: this.imageForm.prompt,
-          style: this.imageForm.style,
-          size: this.imageForm.size
-        })
-
-        if (response && response.code === 200) {
-          this.generatedImage = response.data
-          this.$message.success('图片生成成功！')
-        } else {
-          this.$message.error(response.msg || '图片生成失败')
-        }
-      } catch (error) {
-        console.error('图片生成失败:', error)
-        if (error.message) {
-          this.$message.error(error.message)
-        } else {
-          this.$message.error('图片生成失败，请稍后重试')
-        }
-      } finally {
-        this.imageGenerating = false
-      }
-    },
-
-    downloadImage() {
-      if (!this.generatedImage) return
-
-      // 创建下载链接
-      const link = document.createElement('a')
-      link.href = this.generatedImage.imageUrl
-      link.download = `generated_image_${this.generatedImage.imageId}.jpg`
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-
-      this.$message.success('图片下载已开始')
-    },
-
-    useImageInChat() {
-      if (!this.generatedImage) return
-
-      // 发送图片到聊天
-      this.$emit('send-image', this.generatedImage)
-      this.imageDialogVisible = false
-      this.$message.success('图片已发送到聊天')
     }
   },
   mounted() {
@@ -483,65 +313,6 @@ export default {
       i {
         color: white;
         font-size: 16px;
-      }
-    }
-
-    .image-btn {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      flex-shrink: 0;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-
-      &:hover {
-        background: #f0f4ff;
-        transform: scale(1.05);
-        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
-      }
-
-      i {
-        color: #667eea;
-        font-size: 16px;
-      }
-    }
-  }
-}
-
-// 图片生成对话框样式
-.image-generation-dialog {
-  .generated-image-result {
-    margin-top: 20px;
-    border-top: 1px solid #f0f0f0;
-    padding-top: 20px;
-
-    .result-title {
-      font-size: 14px;
-      font-weight: 600;
-      color: #333;
-      margin-bottom: 12px;
-    }
-
-    .image-container {
-      text-align: center;
-
-      .generated-image {
-        max-width: 100%;
-        max-height: 300px;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        margin-bottom: 12px;
-      }
-
-      .image-actions {
-        display: flex;
-        justify-content: center;
-        gap: 12px;
       }
     }
   }

@@ -46,10 +46,6 @@ public class SysUserVip extends BaseEntity
     @Excel(name = "定制角色配额")
     private Long customRoleQuota;
 
-    /** 会员等级（0普通 1白银 2黄金 3铂金 4钻石） */
-    @Excel(name = "会员等级", readConverterExp = "0=普通,1=白银,2=黄金,3=铂金,4=钻石")
-    private Integer vipLevel;
-
     public void setVipId(Long vipId) 
     {
         this.vipId = vipId;
@@ -115,19 +111,9 @@ public class SysUserVip extends BaseEntity
         this.customRoleQuota = customRoleQuota;
     }
 
-    public Long getCustomRoleQuota()
+    public Long getCustomRoleQuota() 
     {
         return customRoleQuota;
-    }
-
-    public void setVipLevel(Integer vipLevel)
-    {
-        this.vipLevel = vipLevel;
-    }
-
-    public Integer getVipLevel()
-    {
-        return vipLevel;
     }
 
     @Override
@@ -140,7 +126,6 @@ public class SysUserVip extends BaseEntity
             .append("expireTime", getExpireTime())
             .append("vipStatus", getVipStatus())
             .append("customRoleQuota", getCustomRoleQuota())
-            .append("vipLevel", getVipLevel())
             .append("createBy", getCreateBy())
             .append("createTime", getCreateTime())
             .append("updateBy", getUpdateBy())

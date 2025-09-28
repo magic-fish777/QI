@@ -53,17 +53,9 @@ public interface ISysUserVipService
 
     /**
      * 删除会员订阅信息
-     *
+     * 
      * @param vipId 会员订阅主键
      * @return 结果
      */
     public int deleteSysUserVipByVipId(Long vipId);
-
-    /**
-     * 根据用户ID查询有效的会员信息
-     *
-     * @param userId 用户ID
-     * @return 会员信息
-     */
-    public SysUserVip selectValidVipByUserId(Long userId);
 }

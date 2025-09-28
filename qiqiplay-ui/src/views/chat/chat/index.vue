@@ -39,14 +39,6 @@
           @back="backToCharacterList"
           @show-menu="showChatMenu = true"
         />
-        <!-- VIP状态指示器 -->
-        <div class="vip-status-bar">
-          <VipStatusIndicator
-            :compact="true"
-            @upgrade="handleVipUpgrade"
-            @permission-denied="handlePermissionDenied"
-          />
-        </div>
         <MessageArea
           :messages="currentMessages"
           :selected-character="selectedCharacter"
@@ -130,13 +122,10 @@ import ChatHeader from './components/ChatHeader'
 import MessageArea from './components/MessageArea'
 import InputArea from './components/InputArea'
 import MobileNavigation from '../components/MobileNavigation'
-import VipStatusIndicator from '@/components/VipStatus/VipStatusIndicator.vue'
 import { getChatRoleList } from '@/api/chat/roles'
 import { textChat, audioChat } from '@/api/chat/chat'
 import { getRoleChatRecords } from '@/api/chat/records'
 import { getUserInfo } from '@/api/chat/profile'
-import { getUserVipInfo } from '@/api/chat/vip'
-import { useVipStatus } from '@/composables/useVipStatus'
 
 export default {
   name: 'MobileChatApp',
@@ -146,14 +135,7 @@ export default {
     ChatHeader,
     MessageArea,
     InputArea,
-    MobileNavigation,
-    VipStatusIndicator
-  },
-  setup() {
-    const vipStatus = useVipStatus()
-    return {
-      ...vipStatus
-    }
+    MobileNavigation
   },
   data() {
     return {
@@ -182,19 +164,7 @@ export default {
 
       // 角色数据
       characters: [],
-      charactersLoading: true,
-
-      // VIP信息
-      userVipInfo: {
-        isVip: false,
-        vipLevel: 0,
-        remainingDays: 0,
-        privileges: {
-          dailyChatLimit: 10,
-          voiceEnabled: false,
-          imageEnabled: false
-        }
-      }
+      charactersLoading: true
     }
   },
   computed: {
@@ -209,7 +179,6 @@ export default {
   created() {
     this.loadCharacters()
     this.loadUserInfo()
-    this.loadUserVipInfo()
   },
   methods: {
     // 加载用户信息
@@ -226,20 +195,6 @@ export default {
       } catch (error) {
         console.error('聊天页面加载用户信息失败:', error)
         // 如果加载失败，保持默认用户信息
-      }
-    },
-
-    // 加载用户VIP信息
-    async loadUserVipInfo() {
-      try {
-        const response = await getUserVipInfo()
-        if (response && response.code === 200) {
-          this.userVipInfo = response.data
-          console.log('用户VIP信息加载成功:', this.userVipInfo)
-        }
-      } catch (error) {
-        console.error('加载用户VIP信息失败:', error)
-        // 如果加载失败，保持默认VIP信息（普通用户）
       }
     },
 
@@ -383,14 +338,6 @@ export default {
 
     async sendMessage(content) {
       console.log('发送消息:', content)
-
-      // 检查文本聊天权限
-      const permissionCheck = this.checkChatPermission()
-      if (!permissionCheck.allowed) {
-        this.$message.warning(permissionCheck.message)
-        return
-      }
-
       const newMessage = {
         id: Date.now(),
         content: content,
@@ -452,13 +399,6 @@ export default {
 
     async sendAudioMessage(audioBlob) {
       console.log('发送语音消息:', audioBlob)
-
-      // 检查语音聊天权限
-      const permissionCheck = this.checkVoicePermission()
-      if (!permissionCheck.allowed) {
-        this.$message.warning(permissionCheck.message)
-        return
-      }
 
       // 添加用户语音消息到聊天记录
       const userAudioMessage = {
@@ -540,109 +480,6 @@ export default {
       }).catch(() => {
         this.showUserMenu = false
       })
-    },
-
-    // 检查文本聊天权限
-    checkChatPermission() {
-      // TODO: 这里应该检查用户今日的实际聊天次数
-      // 目前只检查会员等级权限，不检查具体使用次数
-      const dailyLimit = this.userVipInfo.privileges.dailyChatLimit
-
-      if (dailyLimit === 0) {
-        return {
-          allowed: false,
-          message: '您的会员等级暂不支持文本聊天功能，请升级会员'
-        }
-      }
-
-      if (dailyLimit !== -1) {
-        // 有限制的情况下，这里应该检查今日使用次数
-        // 目前先允许使用，后续可以添加使用次数统计
-      }
-
-      return { allowed: true }
-    },
-
-    // 检查语音聊天权限
-    checkVoicePermission() {
-      if (!this.userVipInfo.privileges.voiceEnabled) {
-        return {
-          allowed: false,
-          message: '您的会员等级暂不支持语音聊天功能，请升级会员后使用'
-        }
-      }
-
-      // 检查聊天次数限制（语音聊天也算在聊天次数内）
-      const dailyLimit = this.userVipInfo.privileges.dailyChatLimit
-      if (dailyLimit === 0) {
-        return {
-          allowed: false,
-          message: '您的会员等级暂不支持聊天功能，请升级会员'
-        }
-      }
-
-      return { allowed: true }
-    },
-
-    // VIP相关方法
-    handleVipUpgrade() {
-      console.log('跳转到会员升级页面')
-      this.$router.push('/chat/membership')
-    },
-
-    handlePermissionDenied(event) {
-      console.log('权限不足:', event)
-      this.$message.warning(event.message || '权限不足')
-    },
-
-    // 更新后的权限检查方法（使用新的VIP状态系统）
-    async checkFeaturePermissionNew(feature) {
-      try {
-        const permission = await this.checkFeaturePermission(feature)
-        if (!permission.hasPermission) {
-          this.$message.warning(permission.message)
-          return false
-        }
-
-        // 检查今日使用次数
-        if (this.isFeatureLimited(feature)) {
-          this.$message.warning(`今日${feature}使用次数已达上限`)
-          return false
-        }
-
-        return true
-      } catch (error) {
-        console.error('检查功能权限失败:', error)
-        this.$message.error('权限检查失败')
-        return false
-      }
-    },
-
-    // 发送消息前的权限检查（更新版本）
-    async sendMessageWithPermissionCheck(content) {
-      const canUse = await this.checkFeaturePermissionNew('chat')
-      if (canUse) {
-        return this.sendMessage(content)
-      }
-    },
-
-    // 语音功能权限检查（更新版本）
-    async handleToggleVoiceWithPermissionCheck() {
-      const canUse = await this.checkFeaturePermissionNew('voice')
-      if (canUse) {
-        this.handleToggleVoice()
-      }
-    },
-
-    // 刷新VIP状态
-    async refreshVipInfo() {
-      try {
-        await this.forceRefresh()
-        this.$message.success('VIP状态已更新')
-      } catch (error) {
-        console.error('刷新VIP状态失败:', error)
-        this.$message.error('刷新失败')
-      }
     }
   }
 }
@@ -724,41 +561,11 @@ export default {
   flex-direction: column;
   background: white;
 
-  /* MessageArea 需要减去ChatHeader、VIP状态栏和InputArea的高度 */
+  /* MessageArea 需要减去ChatHeader和InputArea的高度 */
   :deep(.messages-area) {
-    height: calc(100vh - 80px - 70px - 50px - 100px); /* 底部导航 + 聊天头部 + VIP状态栏 + 输入区域 */
-    max-height: calc(100vh - 80px - 70px - 50px - 100px);
+    height: calc(100vh - 80px - 70px - 100px); /* 底部导航 + 聊天头部 + 输入区域 */
+    max-height: calc(100vh - 80px - 70px - 100px);
     overflow-y: auto;
-  }
-}
-
-// VIP状态栏样式
-.vip-status-bar {
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  border-bottom: 1px solid #dee2e6;
-  padding: 8px 16px;
-  min-height: 50px;
-  display: flex;
-  align-items: center;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  z-index: 100;
-
-  :deep(.vip-status-indicator) {
-    width: 100%;
-
-    .status-main {
-      padding: 6px 12px;
-
-      .vip-badge .el-tag {
-        font-size: 12px;
-        padding: 4px 8px;
-      }
-
-      .expire-warning .el-tag {
-        font-size: 11px;
-        padding: 2px 6px;
-      }
-    }
   }
 }
 

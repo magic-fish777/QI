@@ -84,7 +84,7 @@ public class SysUserVipServiceImpl implements ISysUserVipService
 
     /**
      * 删除会员订阅信息
-     *
+     * 
      * @param vipId 会员订阅主键
      * @return 结果
      */
@@ -92,17 +92,5 @@ public class SysUserVipServiceImpl implements ISysUserVipService
     public int deleteSysUserVipByVipId(Long vipId)
     {
         return sysUserVipMapper.deleteSysUserVipByVipId(vipId);
-    }
-
-    /**
-     * 根据用户ID查询有效的会员信息
-     *
-     * @param userId 用户ID
-     * @return 会员信息
-     */
-    @Override
-    public SysUserVip selectValidVipByUserId(Long userId)
-    {
-        return sysUserVipMapper.selectValidVipByUserId(userId);
     }
 }
