@@ -100,6 +100,7 @@ public class AiFrontTokenService
     {
         if (StringUtils.isNotNull(loginUser) && StringUtils.isNotEmpty(loginUser.getToken()))
         {
+            log.info("==> [AI Token] 缓存用户信息: " + loginUser.toString());
             refreshToken(loginUser);
         }
     }
@@ -124,8 +125,10 @@ public class AiFrontTokenService
      */
     public String createToken(AiFrontLoginUser loginUser)
     {
+        log.info("==> [AI Token] 创建用户令牌: " + loginUser.toString());
         String token = IdUtils.fastUUID();
         loginUser.setToken(token);
+
         setUserAgent(loginUser);
         refreshToken(loginUser);
 

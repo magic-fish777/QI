@@ -30,6 +30,9 @@ public class OssConfig {
     /** 音频文件存储路径前缀 */
     private String audioPath = "audio/";
 
+    /** 头像文件存储路径前缀 */
+    private String avatarPath = "avatar/";
+
     public String getEndpoint() {
         return endpoint;
     }
@@ -76,5 +79,13 @@ public class OssConfig {
 
     public void setAudioPath(String audioPath) {
         this.audioPath = audioPath;
+    }
+
+    public String getAvatarPath() {
+        return avatarPath;
+    }
+
+    public void setAvatarPath(String avatarPath) {
+        this.avatarPath = avatarPath;
     }
 }

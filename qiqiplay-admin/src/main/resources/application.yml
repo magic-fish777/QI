@@ -151,3 +151,21 @@ xss:
   excludes: /system/notice
   # 匹配链接
   urlPatterns: /system/*,/monitor/*,/tool/*
+
+# 阿里云OSS配置
+aliyun:
+  oss:
+    # OSS服务端点（需要根据你的bucket所在区域配置）
+    endpoint: oss-cn-huhehaote.aliyuncs.com
+    # 访问密钥ID（需要替换为你的实际AccessKey ID）
+    access-key: LTAI5tJUizJ2FeiBL31yy8C4
+    # 访问密钥（需要替换为你的实际AccessKey Secret）
+    secret-key: PhySsWfkAlQECAJ65LdVCXG19ZNYD0
+    # 存储桶名称
+    bucket-name: xiaomagemall
+    # 自定义域名（可选，如果有绑定自定义域名）
+    domain:
+    # 音频文件存储路径前缀
+    audio-path: audio/
+    # 头像文件存储路径前缀
+    avatar-path: avatar/

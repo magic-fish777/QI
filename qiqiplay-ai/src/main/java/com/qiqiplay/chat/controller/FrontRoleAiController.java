@@ -22,7 +22,6 @@ import java.util.List;
  * @author ruoyi
  * @date 2025-09-24
  */
-@Anonymous
 @RestController
 @RequestMapping("/chat/ai")
 public class FrontRoleAiController extends BaseController

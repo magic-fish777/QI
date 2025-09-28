@@ -5,10 +5,7 @@ export function getChatRoleList(query) {
   return request({
     url: '/chat/ai/list',
     method: 'get',
-    params: query,
-    headers: {
-      'isToken': true // 确保使用token验证
-    }
+    params: query
   })
 }
 
@@ -16,9 +13,6 @@ export function getChatRoleList(query) {
 export function getChatRoleDetail(roleId) {
   return request({
     url: '/chat/ai/' + roleId,
-    method: 'get',
-    headers: {
-      'isToken': true
-    }
+    method: 'get'
   })
 }

@@ -156,6 +156,89 @@ public class OssUtils {
     }
 
     /**
+     * 上传头像图片到OSS
+     *
+     * @param imageFile 图片文件
+     * @return 文件访问URL
+     * @throws IOException IO异常
+     */
+    public String uploadAvatarImage(MultipartFile imageFile) throws IOException {
+        return uploadAvatarImage(imageFile.getBytes(), getFileExtension(imageFile.getOriginalFilename()));
+    }
+
+    /**
+     * 上传头像图片字节数组到OSS
+     *
+     * @param imageBytes 图片文件字节数组
+     * @param fileExtension 文件扩展名（如：jpg, png, jpeg, gif）
+     * @return 文件访问URL
+     * @throws IOException IO异常
+     */
+    public String uploadAvatarImage(byte[] imageBytes, String fileExtension) throws IOException {
+        OSS ossClient = null;
+        try {
+            // 创建OSS客户端
+            ossClient = new OSSClientBuilder().build(ossConfig.getEndpoint(),
+                    ossConfig.getAccessKey(), ossConfig.getSecretKey());
+
+            // 生成文件名
+            String fileName = generateAvatarFileName(fileExtension);
+
+            // 构造完整的对象名称（包含路径）
+            String objectName = ossConfig.getAvatarPath() + fileName;
+
+            // 创建上传请求
+            PutObjectRequest putObjectRequest = new PutObjectRequest(
+                    ossConfig.getBucketName(),
+                    objectName,
+                    new ByteArrayInputStream(imageBytes)
+            );
+
+            // 上传文件
+            PutObjectResult result = ossClient.putObject(putObjectRequest);
+
+            if (result != null) {
+                // 构造文件访问URL
+                String fileUrl = buildFileUrl(objectName);
+                logger.info("头像图片上传成功: fileName={}, url={}", fileName, fileUrl);
+                return fileUrl;
+            } else {
+                throw new IOException("头像上传失败");
+            }
+
+        } catch (Exception e) {
+            logger.error("头像图片上传到OSS失败: {}", e.getMessage(), e);
+            throw new IOException("头像上传失败: " + e.getMessage(), e);
+        } finally {
+            if (ossClient != null) {
+                ossClient.shutdown();
+            }
+        }
+    }
+
+    /**
+     * 生成头像文件名
+     *
+     * @param fileExtension 文件扩展名
+     * @return 生成的文件名
+     */
+    private String generateAvatarFileName(String fileExtension) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+        String dateStr = sdf.format(new Date());
+        String uuid = UUID.randomUUID().toString().replace("-", "");
+
+        // 确保扩展名格式正确
+        if (fileExtension != null && !fileExtension.startsWith(".")) {
+            fileExtension = "." + fileExtension;
+        }
+        if (fileExtension == null || fileExtension.trim().isEmpty()) {
+            fileExtension = ".jpg"; // 默认jpg格式
+        }
+
+        return dateStr + "/" + uuid + fileExtension;
+    }
+
+    /**
      * 删除OSS上的文件
      *
      * @param fileUrl 文件URL

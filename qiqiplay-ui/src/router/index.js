@@ -114,6 +114,13 @@ export const constantRoutes = [
     meta: { title: '个人中心' }
   },
   {
+    path: '/chat/records',
+    component: () => import('@/views/chat/records/index'),
+    name: 'ChatRecords',
+    hidden: true,
+    meta: { title: '聊天记录' }
+  },
+  {
     path: '/chat/settings',
     component: () => import('@/views/chat/settings/index'),
     name: 'ChatSettings',

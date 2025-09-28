@@ -59,3 +59,7 @@ spring:
                 wall:
                     config:
                         multi-statement-allow: true
+aliyun:
+    endpoint: oss-cn-huhehaote.aliyuncs.com
+    accessKey: LTAI5tJUizJ2FeiBL31yy8C4 #
+    secretKey: PhySsWfkAlQECAJ65LdVCXG19ZNYD0 #

@@ -124,6 +124,8 @@ import InputArea from './components/InputArea'
 import MobileNavigation from '../components/MobileNavigation'
 import { getChatRoleList } from '@/api/chat/roles'
 import { textChat, audioChat } from '@/api/chat/chat'
+import { getRoleChatRecords } from '@/api/chat/records'
+import { getUserInfo } from '@/api/chat/profile'
 
 export default {
   name: 'MobileChatApp',
@@ -176,8 +178,26 @@ export default {
   },
   created() {
     this.loadCharacters()
+    this.loadUserInfo()
   },
   methods: {
+    // 加载用户信息
+    async loadUserInfo() {
+      try {
+        const response = await getUserInfo()
+        if (response && response.data) {
+          this.userInfo = {
+            ...this.userInfo,
+            ...response.data
+          }
+          console.log('聊天页面用户信息加载成功:', this.userInfo)
+        }
+      } catch (error) {
+        console.error('聊天页面加载用户信息失败:', error)
+        // 如果加载失败，保持默认用户信息
+      }
+    },
+
     // 加载AI角色列表
     async loadCharacters() {
       try {
@@ -250,25 +270,70 @@ export default {
     },
 
     // 消息处理
-    loadMessages(characterId) {
+    async loadMessages(characterId) {
       console.log('加载消息历史，角色ID:', characterId)
-      const mockMessages = [
-        {
-          id: 1,
-          content: '你好！',
-          isUser: true,
-          time: new Date(Date.now() - 600000)
-        },
-        {
-          id: 2,
-          content: `你好！我是${this.selectedCharacter.name}，很高兴认识你！`,
-          isUser: false,
-          time: new Date(Date.now() - 590000),
-          voiceDuration: this.selectedCharacter.voiceDuration
+      try {
+        // 加载该角色的历史对话记录
+        const response = await getRoleChatRecords(characterId, {
+          pageNum: 1,
+          pageSize: 50 // 加载最近50条对话
+        })
+
+        if (response && response.rows && response.rows.length > 0) {
+          // 转换API数据格式为组件需要的格式
+          // 按照原始记录的顺序，每条记录保持用户输入和AI回复的配对关系
+          const historyMessages = response.rows
+            .sort((a, b) => new Date(a.chatTime) - new Date(b.chatTime)) // 先按时间正序排列原始记录
+            .map(record => [
+              // 用户消息
+              {
+                id: `${record.recordId}_user`,
+                content: record.userInputContent,
+                isUser: true,
+                time: new Date(record.chatTime),
+                isAudio: record.userInputType === 'audio'
+              },
+              // AI回复
+              {
+                id: `${record.recordId}_ai`,
+                content: record.aiReplyContent,
+                isUser: false,
+                time: new Date(new Date(record.chatTime).getTime() + 1000), // AI回复时间稍后
+                audioFile: record.aiAudioFile,
+                isPlaying: false
+              }
+            ]).flat() // 展平后保持配对顺序，不再重新排序
+
+          this.currentMessages = historyMessages
+          console.log('加载历史消息成功:', historyMessages.length, '条')
+        } else {
+          // 如果没有历史记录，显示欢迎消息
+          this.currentMessages = [
+            {
+              id: 1,
+              content: `你好！我是${this.selectedCharacter.name}，很高兴认识你！有什么可以帮助你的吗？`,
+              isUser: false,
+              time: new Date(),
+              voiceDuration: this.selectedCharacter.voiceDuration
+            }
+          ]
+          console.log('无历史记录，显示欢迎消息')
         }
-      ]
-      this.currentMessages = mockMessages
-      console.log('设置消息数据:', mockMessages)
+      } catch (error) {
+        console.error('加载历史消息失败:', error)
+        // 如果加载失败，使用默认欢迎消息
+        this.currentMessages = [
+          {
+            id: 1,
+            content: `你好！我是${this.selectedCharacter.name}，很高兴认识你！`,
+            isUser: false,
+            time: new Date(),
+            voiceDuration: this.selectedCharacter.voiceDuration
+          }
+        ]
+        // 可以选择是否显示错误提示
+        // this.$message.warning('加载历史对话失败，将显示新的对话')
+      }
     },
 
     async sendMessage(content) {

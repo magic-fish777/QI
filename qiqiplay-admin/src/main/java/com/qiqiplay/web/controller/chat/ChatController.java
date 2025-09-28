@@ -24,7 +24,7 @@ import com.qiqiplay.common.utils.OssUtils;
  *
  * @author qiqiplay
  */
-@Anonymous
+
 @RestController
 @RequestMapping("/chat")
 public class ChatController extends BaseController

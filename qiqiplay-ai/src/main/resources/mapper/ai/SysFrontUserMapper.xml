@@ -47,12 +47,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <include refid="selectSysFrontUserVo"/>
         where user_id = #{userId}
     </select>
-    <select id="selectSysFrontUserByUsername" resultType="com.qiqiplay.ai.domain.SysFrontUser">
+    <select id="selectSysFrontUserByUsername" parameterType="String" resultMap="SysFrontUserResult">
         <include refid="selectSysFrontUserVo"/>
         where user_name = #{username}
     </select>
 
-    <select id="selectSysFrontUserByEmail" resultType="com.qiqiplay.ai.domain.SysFrontUser">
+    <select id="selectSysFrontUserByEmail" parameterType="String" resultMap="SysFrontUserResult">
         <include refid="selectSysFrontUserVo"/>
         where email = #{email}
     </select>

@@ -58,6 +58,10 @@
             <groupId>com.qiqiplay</groupId>
             <artifactId>qiqiplay-system</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.qiqiplay</groupId>
+            <artifactId>qiqiplay-ai</artifactId>
+        </dependency>
 
     </dependencies>
 

@@ -76,16 +76,6 @@
             </div>
             <el-switch v-model="settings.autoCleanChats"></el-switch>
           </div>
-          <div class="setting-item">
-            <div class="setting-label">
-              <i class="el-icon-view"></i>
-              <div class="label-content">
-                <span class="label-title">隐身模式</span>
-                <span class="label-desc">不显示在线状态</span>
-              </div>
-            </div>
-            <el-switch v-model="settings.invisibleMode"></el-switch>
-          </div>
         </div>
 
         <div class="settings-section">
@@ -227,16 +217,6 @@
                 </div>
                 <el-switch v-model="settings.autoCleanChats"></el-switch>
               </div>
-              <div class="setting-item">
-                <div class="setting-label">
-                  <i class="el-icon-view"></i>
-                  <div class="label-content">
-                    <span class="label-title">隐身模式</span>
-                    <span class="label-desc">不显示在线状态</span>
-                  </div>
-                </div>
-                <el-switch v-model="settings.invisibleMode"></el-switch>
-              </div>
             </div>
           </div>
 
@@ -326,8 +306,7 @@ export default {
         darkMode: false,
         autoSave: true,
         encryptChats: false,
-        autoCleanChats: false,
-        invisibleMode: false
+        autoCleanChats: false
       }
     }
   },

@@ -241,4 +241,20 @@ public class AiFrontLoginUser implements UserDetails
     {
         return null;
     }
+
+    @Override
+    public String toString() {
+        return "AiFrontLoginUser{" +
+                "userId=" + userId +
+                ", token='" + token + '\'' +
+                ", loginTime=" + loginTime +
+                ", expireTime=" + expireTime +
+                ", ipaddr='" + ipaddr + '\'' +
+                ", loginLocation='" + loginLocation + '\'' +
+                ", browser='" + browser + '\'' +
+                ", os='" + os + '\'' +
+                ", permissions=" + permissions +
+                ", frontUser=" + frontUser +
+                '}';
+    }
 }

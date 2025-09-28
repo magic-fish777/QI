@@ -13,8 +13,8 @@
         <div class="user-card">
           <div class="user-avatar">
             <img :src="userInfo.avatar || defaultAvatar" :alt="userInfo.name">
-            <div class="edit-avatar" @click="editAvatar">
-              <i class="el-icon-camera"></i>
+            <div class="edit-avatar" @click="editAvatar" :class="{ 'uploading': uploadingAvatar }">
+              <i :class="uploadingAvatar ? 'el-icon-loading' : 'el-icon-camera'"></i>
             </div>
           </div>
           <div class="user-info">
@@ -31,34 +31,16 @@
               <div class="stat-number">365</div>
               <div class="stat-label">总对话</div>
             </div>
-            <div class="stat-item">
-              <div class="stat-number">15</div>
-              <div class="stat-label">收藏角色</div>
-            </div>
           </div>
         </div>
 
         <div class="menu-section">
           <div class="menu-group">
-            <div class="menu-item" @click="editProfile">
-              <div class="menu-icon">
-                <i class="el-icon-edit"></i>
-              </div>
-              <span>个人资料</span>
-              <i class="el-icon-arrow-right"></i>
-            </div>
             <div class="menu-item" @click="viewHistory">
               <div class="menu-icon">
                 <i class="el-icon-time"></i>
               </div>
               <span>聊天记录</span>
-              <i class="el-icon-arrow-right"></i>
-            </div>
-            <div class="menu-item" @click="viewFavorites">
-              <div class="menu-icon">
-                <i class="el-icon-star-on"></i>
-              </div>
-              <span>我的收藏</span>
               <i class="el-icon-arrow-right"></i>
             </div>
           </div>
@@ -69,13 +51,6 @@
                 <i class="el-icon-service"></i>
               </div>
               <span>客服支持</span>
-              <i class="el-icon-arrow-right"></i>
-            </div>
-            <div class="menu-item" @click="showFeedback">
-              <div class="menu-icon">
-                <i class="el-icon-chat-dot-round"></i>
-              </div>
-              <span>意见反馈</span>
               <i class="el-icon-arrow-right"></i>
             </div>
             <div class="menu-item" @click="showAbout">
@@ -113,8 +88,8 @@
             <div class="user-avatar-section">
               <div class="user-avatar-large">
                 <img :src="userInfo.avatar || defaultAvatar" :alt="userInfo.name">
-                <div class="edit-avatar" @click="editAvatar">
-                  <i class="el-icon-camera"></i>
+                <div class="edit-avatar" @click="editAvatar" :class="{ 'uploading': uploadingAvatar }">
+                  <i :class="uploadingAvatar ? 'el-icon-loading' : 'el-icon-camera'"></i>
                 </div>
               </div>
               <div class="user-details">
@@ -132,24 +107,11 @@
                 <div class="stat-number">365</div>
                 <div class="stat-label">总对话</div>
               </div>
-              <div class="stat-item">
-                <div class="stat-number">15</div>
-                <div class="stat-label">收藏角色</div>
-              </div>
             </div>
           </div>
         </div>
 
         <div class="profile-menu-grid">
-          <div class="menu-card" @click="editProfile">
-            <div class="menu-icon">
-              <i class="el-icon-edit"></i>
-            </div>
-            <div class="menu-content">
-              <div class="menu-title">编辑资料</div>
-              <div class="menu-desc">修改个人信息</div>
-            </div>
-          </div>
           <div class="menu-card" @click="viewHistory">
             <div class="menu-icon">
               <i class="el-icon-time"></i>
@@ -159,15 +121,6 @@
               <div class="menu-desc">查看历史对话</div>
             </div>
           </div>
-          <div class="menu-card" @click="viewFavorites">
-            <div class="menu-icon">
-              <i class="el-icon-star-on"></i>
-            </div>
-            <div class="menu-content">
-              <div class="menu-title">我的收藏</div>
-              <div class="menu-desc">收藏的角色和对话</div>
-            </div>
-          </div>
           <div class="menu-card" @click="contactSupport">
             <div class="menu-icon">
               <i class="el-icon-service"></i>
@@ -175,15 +128,6 @@
             <div class="menu-content">
               <div class="menu-title">客服支持</div>
               <div class="menu-desc">获取帮助和支持</div>
-            </div>
-          </div>
-          <div class="menu-card" @click="showFeedback">
-            <div class="menu-icon">
-              <i class="el-icon-chat-dot-round"></i>
-            </div>
-            <div class="menu-content">
-              <div class="menu-title">意见反馈</div>
-              <div class="menu-desc">提供建议和反馈</div>
             </div>
           </div>
           <div class="menu-card" @click="showAbout">
@@ -208,11 +152,21 @@
 
     <!-- 移动端底部导航 -->
     <MobileNavigation v-if="isMobile" />
+
+    <!-- 隐藏的文件选择器 -->
+    <input
+      ref="avatarInput"
+      type="file"
+      accept="image/jpg,image/jpeg,image/png,image/gif"
+      @change="handleAvatarChange"
+      style="display: none"
+    />
   </div>
 </template>
 
 <script>
 import MobileNavigation from '../components/MobileNavigation'
+import { getUserInfo, uploadAvatar } from '@/api/chat/profile'
 
 export default {
   name: 'Profile',
@@ -229,7 +183,8 @@ export default {
       },
       userLevelName: '白银会员',
       dailyChats: 15,
-      defaultAvatar: require('@/assets/images/profile.jpg')
+      defaultAvatar: require('@/assets/images/profile.jpg'),
+      uploadingAvatar: false
     }
   },
   computed: {
@@ -237,24 +192,88 @@ export default {
       return window.innerWidth <= 768
     }
   },
+  created() {
+    this.loadUserInfo()
+  },
   methods: {
+    // 加载用户信息
+    async loadUserInfo() {
+      try {
+        const response = await getUserInfo()
+        if (response && response.data) {
+          this.userInfo = {
+            ...this.userInfo,
+            ...response.data
+          }
+          console.log('用户信息加载成功:', this.userInfo)
+        }
+      } catch (error) {
+        console.error('加载用户信息失败:', error)
+        // 如果加载失败，使用默认信息，不显示错误提示
+      }
+    },
+
+    // 编辑头像
     editAvatar() {
-      this.$message.info('头像编辑功能开发中...')
+      if (this.uploadingAvatar) {
+        this.$message.warning('头像正在上传中，请稍候...')
+        return
+      }
+      // 触发文件选择
+      this.$refs.avatarInput.click()
     },
-    editProfile() {
-      this.$message.info('个人资料编辑功能开发中...')
+
+    // 处理头像文件选择
+    async handleAvatarChange(event) {
+      const file = event.target.files[0]
+      if (!file) return
+
+      // 验证文件类型
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif']
+      if (!allowedTypes.includes(file.type)) {
+        this.$message.error('只支持 JPG、PNG、GIF 格式的图片')
+        return
+      }
+
+      // 验证文件大小（5MB）
+      if (file.size > 5 * 1024 * 1024) {
+        this.$message.error('图片大小不能超过 5MB')
+        return
+      }
+
+      // 创建FormData
+      const formData = new FormData()
+      formData.append('avatar', file)
+
+      try {
+        this.uploadingAvatar = true
+        console.log('开始上传头像:', file.name, file.size)
+
+        const response = await uploadAvatar(formData)
+        if (response && response.code === 200) {
+          // 更新头像URL
+          this.userInfo.avatar = response.data
+          this.$message.success('头像更新成功')
+          console.log('头像上传成功:', response.data)
+        } else {
+          this.$message.error(response.msg || '头像上传失败')
+        }
+      } catch (error) {
+        console.error('头像上传失败:', error)
+        this.$message.error('头像上传失败，请稍后重试')
+      } finally {
+        this.uploadingAvatar = false
+        // 清空文件选择器，允许重新选择同一文件
+        event.target.value = ''
+      }
     },
+
     viewHistory() {
-      this.$message.info('聊天记录功能开发中...')
-    },
-    viewFavorites() {
-      this.$message.info('我的收藏功能开发中...')
+      // 跳转到聊天记录页面
+      this.$router.push('/chat/records')
     },
     contactSupport() {
       this.$message.info('客服支持功能开发中...')
-    },
-    showFeedback() {
-      this.$message.info('意见反馈功能开发中...')
     },
     showAbout() {
       this.$message.info('关于我们功能开发中...')
@@ -349,10 +368,25 @@ export default {
         justify-content: center;
         cursor: pointer;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+
+        &.uploading {
+          background: #909399;
+          cursor: not-allowed;
+        }
 
         i {
           color: white;
           font-size: 12px;
+
+          &.el-icon-loading {
+            animation: rotating 1s linear infinite;
+          }
+        }
+
+        &:hover:not(.uploading) {
+          background: #5a6fd8;
+          transform: scale(1.1);
         }
       }
     }
@@ -534,14 +568,25 @@ export default {
             justify-content: center;
             cursor: pointer;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
 
-            &:hover {
+            &.uploading {
+              background: #909399;
+              cursor: not-allowed;
+            }
+
+            &:hover:not(.uploading) {
               background: #5a6fd8;
+              transform: scale(1.1);
             }
 
             i {
               color: white;
               font-size: 14px;
+
+              &.el-icon-loading {
+                animation: rotating 1s linear infinite;
+              }
             }
           }
         }
@@ -662,5 +707,10 @@ export default {
   .mobile-profile {
     display: none;
   }
+}
+
+@keyframes rotating {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 </style>
