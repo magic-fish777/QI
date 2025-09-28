@@ -13,6 +13,15 @@ ruoyi:
   # 验证码类型 math 数字计算 char 字符验证
   captchaType: math
 
+# QiQiPlay项目配置
+qiqiplay:
+  # VIP会员系统配置
+  vip:
+    # 定时任务配置
+    scheduler:
+      # 是否启用VIP过期检查定时任务
+      enabled: true
+
 # 开发环境配置
 server:
   # 服务器的HTTP端口，默认为8080

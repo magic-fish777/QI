@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qiqiplay.ai.mapper.SysUserDailyUsageMapper">
+
+    <resultMap type="SysUserDailyUsage" id="SysUserDailyUsageResult">
+        <result property="usageId"    column="usage_id"    />
+        <result property="userId"    column="user_id"    />
+        <result property="usageDate"    column="usage_date"    />
+        <result property="chatCount"    column="chat_count"    />
+        <result property="imageCount"    column="image_count"    />
+        <result property="voiceCount"    column="voice_count"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <sql id="selectSysUserDailyUsageVo">
+        select usage_id, user_id, usage_date, chat_count, image_count, voice_count, create_time, update_time from sys_user_daily_usage
+    </sql>
+
+    <select id="selectSysUserDailyUsageList" parameterType="SysUserDailyUsage" resultMap="SysUserDailyUsageResult">
+        <include refid="selectSysUserDailyUsageVo"/>
+        <where>
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="usageDate != null "> and usage_date = #{usageDate}</if>
+            <if test="chatCount != null "> and chat_count = #{chatCount}</if>
+            <if test="imageCount != null "> and image_count = #{imageCount}</if>
+            <if test="voiceCount != null "> and voice_count = #{voiceCount}</if>
+        </where>
+        order by usage_date desc
+    </select>
+
+    <select id="selectSysUserDailyUsageByUsageId" parameterType="Long" resultMap="SysUserDailyUsageResult">
+        <include refid="selectSysUserDailyUsageVo"/>
+        where usage_id = #{usageId}
+    </select>
+
+    <select id="selectByUserIdAndDate" resultMap="SysUserDailyUsageResult">
+        <include refid="selectSysUserDailyUsageVo"/>
+        where user_id = #{userId} and usage_date = #{usageDate}
+    </select>
+
+    <insert id="insertSysUserDailyUsage" parameterType="SysUserDailyUsage" useGeneratedKeys="true" keyProperty="usageId">
+        insert into sys_user_daily_usage
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null">user_id,</if>
+            <if test="usageDate != null">usage_date,</if>
+            <if test="chatCount != null">chat_count,</if>
+            <if test="imageCount != null">image_count,</if>
+            <if test="voiceCount != null">voice_count,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateTime != null">update_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userId != null">#{userId},</if>
+            <if test="usageDate != null">#{usageDate},</if>
+            <if test="chatCount != null">#{chatCount},</if>
+            <if test="imageCount != null">#{imageCount},</if>
+            <if test="voiceCount != null">#{voiceCount},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSysUserDailyUsage" parameterType="SysUserDailyUsage">
+        update sys_user_daily_usage
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="usageDate != null">usage_date = #{usageDate},</if>
+            <if test="chatCount != null">chat_count = #{chatCount},</if>
+            <if test="imageCount != null">image_count = #{imageCount},</if>
+            <if test="voiceCount != null">voice_count = #{voiceCount},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where usage_id = #{usageId}
+    </update>
+
+    <delete id="deleteSysUserDailyUsageByUsageId" parameterType="Long">
+        delete from sys_user_daily_usage where usage_id = #{usageId}
+    </delete>
+
+    <delete id="deleteSysUserDailyUsageByUsageIds" parameterType="String">
+        delete from sys_user_daily_usage where usage_id in
+        <foreach item="usageId" collection="array" open="(" separator="," close=")">
+            #{usageId}
+        </foreach>
+    </delete>
+
+    <!-- 增加聊天使用次数 -->
+    <update id="incrementChatCount">
+        INSERT INTO sys_user_daily_usage (user_id, usage_date, chat_count, create_time, update_time)
+        VALUES (#{userId}, #{usageDate}, 1, NOW(), NOW())
+        ON DUPLICATE KEY UPDATE
+        chat_count = chat_count + 1,
+        update_time = NOW()
+    </update>
+
+    <!-- 增加图片生成使用次数 -->
+    <update id="incrementImageCount">
+        INSERT INTO sys_user_daily_usage (user_id, usage_date, image_count, create_time, update_time)
+        VALUES (#{userId}, #{usageDate}, 1, NOW(), NOW())
+        ON DUPLICATE KEY UPDATE
+        image_count = image_count + 1,
+        update_time = NOW()
+    </update>
+
+    <!-- 增加语音使用次数 -->
+    <update id="incrementVoiceCount">
+        INSERT INTO sys_user_daily_usage (user_id, usage_date, voice_count, create_time, update_time)
+        VALUES (#{userId}, #{usageDate}, 1, NOW(), NOW())
+        ON DUPLICATE KEY UPDATE
+        voice_count = voice_count + 1,
+        update_time = NOW()
+    </update>
+
+</mapper>

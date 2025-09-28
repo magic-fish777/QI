@@ -53,9 +53,17 @@ public interface SysUserVipMapper
 
     /**
      * 批量删除会员订阅
-     * 
+     *
      * @param vipIds 需要删除的数据主键集合
      * @return 结果
      */
     public int deleteSysUserVipByVipIds(Long[] vipIds);
+
+    /**
+     * 根据用户ID查询有效的会员信息
+     *
+     * @param userId 用户ID
+     * @return 会员信息
+     */
+    public SysUserVip selectValidVipByUserId(Long userId);
 }

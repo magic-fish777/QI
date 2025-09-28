@@ -27,6 +27,12 @@ import com.qiqiplay.web.controller.chat.domain.AudioChatRequest;
 import com.qiqiplay.web.controller.chat.domain.ChatResponse;
 import com.qiqiplay.web.controller.chat.service.IChatService;
 import com.qiqiplay.common.utils.OssUtils;
+import com.qiqiplay.ai.service.ISysUserVipService;
+import com.qiqiplay.ai.domain.SysUserVip;
+import com.qiqiplay.web.controller.chat.utils.ChatSecurityUtils;
+import com.qiqiplay.ai.service.ISysUserDailyUsageService;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 聊天服务实现类
@@ -54,11 +60,20 @@ public class ChatServiceImpl implements IChatService
     @Autowired
     private OssUtils ossUtils;
 
+    @Autowired
+    private ISysUserVipService sysUserVipService;
+
+    @Autowired
+    private ISysUserDailyUsageService sysUserDailyUsageService;
+
     @Override
     public ChatResponse processTextChat(TextChatRequest request)
     {
         try
         {
+            // 检查用户文本聊天权限
+            checkUserChatPermission();
+
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
 
@@ -74,6 +89,16 @@ public class ChatServiceImpl implements IChatService
             Logger.info("response: {}", response.getBody());
 
             ChatResponse chatResponse = parseResponse(response.getBody());
+
+            // 记录使用次数（文本聊天）
+            try {
+                Long currentUserId = ChatSecurityUtils.getCurrentUserId();
+                if (currentUserId != null) {
+                    sysUserDailyUsageService.recordChatUsage(currentUserId, false);
+                }
+            } catch (Exception e) {
+                Logger.warn("记录聊天使用次数失败: {}", e.getMessage());
+            }
 
             // 异步发布聊天记录事件
             publishChatRecordEvent(request.getText(), chatResponse.getReply(),
@@ -92,6 +117,9 @@ public class ChatServiceImpl implements IChatService
     {
         try
         {
+            // 检查用户语音聊天权限
+            checkUserVoicePermission();
+
             Logger.info("开始处理音频聊天请求: role={}", request.getRole());
 
             // 将base64编码的音频数据解码为字节数组
@@ -132,6 +160,16 @@ public class ChatServiceImpl implements IChatService
             Logger.info("response: {}", response.getBody());
 
             ChatResponse chatResponse = parseResponse(response.getBody());
+
+            // 记录使用次数（语音聊天）
+            try {
+                Long currentUserId = ChatSecurityUtils.getCurrentUserId();
+                if (currentUserId != null) {
+                    sysUserDailyUsageService.recordChatUsage(currentUserId, true);
+                }
+            } catch (Exception e) {
+                Logger.warn("记录语音聊天使用次数失败: {}", e.getMessage());
+            }
 
             // 异步发布聊天记录事件（语音输入）
             // 保存用户音频到OSS用于记录
@@ -283,5 +321,162 @@ public class ChatServiceImpl implements IChatService
         }
 
         return "wav"; // 默认wav格式
+    }
+
+    /**
+     * 检查用户文本聊天权限
+     */
+    private void checkUserChatPermission() {
+        try {
+            Long currentUserId = ChatSecurityUtils.getCurrentUserId();
+            if (currentUserId == null) {
+                throw new RuntimeException("用户未登录，无法进行聊天");
+            }
+
+            // 获取用户VIP信息和权限
+            Map<String, Object> userPrivileges = getUserPrivileges(currentUserId);
+
+            // 检查每日聊天限制
+            Integer dailyChatLimit = (Integer) userPrivileges.get("dailyChatLimit");
+            if (dailyChatLimit != null && dailyChatLimit != -1) {
+                // 检查用户今日的聊天次数是否达到限制
+                if (sysUserDailyUsageService.hasReachedDailyChatLimit(currentUserId, dailyChatLimit)) {
+                    throw new RuntimeException("您今日的聊天次数已达上限（" + dailyChatLimit + "次），请明日再试或升级会员");
+                }
+            }
+
+            Logger.info("用户 {} 聊天权限检查通过，每日限制: {}", currentUserId, dailyChatLimit);
+
+        } catch (Exception e) {
+            Logger.error("检查用户聊天权限失败: {}", e.getMessage(), e);
+            throw new RuntimeException("权限检查失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 检查用户语音聊天权限
+     */
+    private void checkUserVoicePermission() {
+        try {
+            Long currentUserId = ChatSecurityUtils.getCurrentUserId();
+            if (currentUserId == null) {
+                throw new RuntimeException("用户未登录，无法进行语音聊天");
+            }
+
+            // 获取用户VIP信息和权限
+            Map<String, Object> userPrivileges = getUserPrivileges(currentUserId);
+
+            // 检查语音功能权限
+            Boolean voiceEnabled = (Boolean) userPrivileges.get("voiceEnabled");
+            if (voiceEnabled == null || !voiceEnabled) {
+                throw new RuntimeException("您的会员等级暂不支持语音聊天功能，请升级会员");
+            }
+
+            // 检查每日聊天限制（语音聊天也算在聊天次数内）
+            Integer dailyChatLimit = (Integer) userPrivileges.get("dailyChatLimit");
+            if (dailyChatLimit != null && dailyChatLimit != -1) {
+                // 检查用户今日的聊天次数是否达到限制
+                if (sysUserDailyUsageService.hasReachedDailyChatLimit(currentUserId, dailyChatLimit)) {
+                    throw new RuntimeException("您今日的聊天次数已达上限（" + dailyChatLimit + "次），请明日再试或升级会员");
+                }
+            }
+
+            Logger.info("用户 {} 语音聊天权限检查通过，每日限制: {}", currentUserId, dailyChatLimit);
+
+        } catch (Exception e) {
+            Logger.error("检查用户语音聊天权限失败: {}", e.getMessage(), e);
+            throw new RuntimeException("权限检查失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 获取用户权限信息
+     *
+     * @param userId 用户ID
+     * @return 权限信息
+     */
+    private Map<String, Object> getUserPrivileges(Long userId) {
+        try {
+            // 查询用户会员信息
+            SysUserVip userVip = sysUserVipService.selectValidVipByUserId(userId);
+
+            Integer vipLevel = 0;
+            if (userVip != null && "1".equals(userVip.getVipStatus())) {
+                vipLevel = userVip.getVipLevel();
+            }
+
+            // 根据会员等级获取权益信息（复用VipController中的逻辑）
+            return getPrivilegesByLevel(vipLevel);
+
+        } catch (Exception e) {
+            Logger.error("获取用户权限信息失败: userId={}, error={}", userId, e.getMessage(), e);
+            // 返回普通用户权限
+            return getPrivilegesByLevel(0);
+        }
+    }
+
+    /**
+     * 根据会员等级获取权益信息
+     *
+     * @param level 会员等级
+     * @return 权益信息
+     */
+    private Map<String, Object> getPrivilegesByLevel(Integer level) {
+        Map<String, Object> privileges = new HashMap<>();
+
+        switch (level == null ? 0 : level) {
+            case 0: // 普通用户
+                privileges.put("dailyChatLimit", 10);
+                privileges.put("dailyImageLimit", 0);
+                privileges.put("customRoleQuota", 0);
+                privileges.put("voiceEnabled", false);
+                privileges.put("imageEnabled", false);
+                privileges.put("exclusiveRoleEnabled", false);
+                privileges.put("chatExportEnabled", false);
+                privileges.put("prioritySupportEnabled", false);
+                break;
+            case 1: // 白银会员
+                privileges.put("dailyChatLimit", 50);
+                privileges.put("dailyImageLimit", 0);
+                privileges.put("customRoleQuota", 2);
+                privileges.put("voiceEnabled", true);
+                privileges.put("imageEnabled", false);
+                privileges.put("exclusiveRoleEnabled", false);
+                privileges.put("chatExportEnabled", false);
+                privileges.put("prioritySupportEnabled", true);
+                break;
+            case 2: // 黄金会员
+                privileges.put("dailyChatLimit", 150);
+                privileges.put("dailyImageLimit", 10);
+                privileges.put("customRoleQuota", 5);
+                privileges.put("voiceEnabled", true);
+                privileges.put("imageEnabled", true);
+                privileges.put("exclusiveRoleEnabled", false);
+                privileges.put("chatExportEnabled", true);
+                privileges.put("prioritySupportEnabled", true);
+                break;
+            case 3: // 铂金会员
+                privileges.put("dailyChatLimit", 500);
+                privileges.put("dailyImageLimit", 30);
+                privileges.put("customRoleQuota", 10);
+                privileges.put("voiceEnabled", true);
+                privileges.put("imageEnabled", true);
+                privileges.put("exclusiveRoleEnabled", true);
+                privileges.put("chatExportEnabled", true);
+                privileges.put("prioritySupportEnabled", true);
+                break;
+            case 4: // 钻石会员
+                privileges.put("dailyChatLimit", -1); // 无限
+                privileges.put("dailyImageLimit", -1); // 无限
+                privileges.put("customRoleQuota", -1); // 无限
+                privileges.put("voiceEnabled", true);
+                privileges.put("imageEnabled", true);
+                privileges.put("exclusiveRoleEnabled", true);
+                privileges.put("chatExportEnabled", true);
+                privileges.put("prioritySupportEnabled", true);
+                break;
+        }
+
+        return privileges;
     }
 }

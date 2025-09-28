@@ -156,6 +156,7 @@
 
 <script>
 import MobileNavigation from '../components/MobileNavigation'
+import { getUserVipInfo } from '@/api/chat/vip'
 
 export default {
   name: 'Benefits',
@@ -164,12 +165,13 @@ export default {
   },
   data() {
     return {
-      userLevel: 'VIP1',
-      userLevelName: '白银会员',
-      dailyChats: 15,
-      maxDailyChats: 50,
-      hasVoiceAccess: true,
+      userLevel: 'FREE',
+      userLevelName: '普通用户',
+      dailyChats: 0,
+      maxDailyChats: 10,
+      hasVoiceAccess: false,
       hasImageAccess: false,
+      userVipInfo: null,
       memberBenefits: [
         {
           id: 1,
@@ -221,9 +223,80 @@ export default {
       return window.innerWidth <= 768
     }
   },
+  created() {
+    this.loadUserVipInfo()
+  },
   methods: {
+    // 加载用户会员信息
+    async loadUserVipInfo() {
+      try {
+        const response = await getUserVipInfo()
+        if (response && response.code === 200) {
+          this.userVipInfo = response.data
+          this.updateDisplayInfo()
+        }
+      } catch (error) {
+        console.error('加载会员信息失败:', error)
+      }
+    },
+
+    // 更新显示信息
+    updateDisplayInfo() {
+      if (!this.userVipInfo) return
+
+      // 更新会员等级显示
+      const levelNames = {
+        0: 'FREE',
+        1: 'VIP1',
+        2: 'VIP2',
+        3: 'VIP3',
+        4: 'VIP4'
+      }
+      const levelDisplayNames = {
+        0: '普通用户',
+        1: '白银会员',
+        2: '黄金会员',
+        3: '铂金会员',
+        4: '钻石会员'
+      }
+
+      this.userLevel = levelNames[this.userVipInfo.vipLevel] || 'FREE'
+      this.userLevelName = levelDisplayNames[this.userVipInfo.vipLevel] || '普通用户'
+
+      // 更新权益信息
+      const privileges = this.userVipInfo.privileges
+      this.maxDailyChats = privileges.dailyChatLimit === -1 ? '无限' : privileges.dailyChatLimit
+      this.hasVoiceAccess = privileges.voiceEnabled
+      this.hasImageAccess = privileges.imageEnabled
+
+      // 更新会员权益状态
+      this.memberBenefits.forEach(benefit => {
+        switch (benefit.id) {
+          case 1: // 无限对话
+            benefit.enabled = privileges.dailyChatLimit === -1
+            break
+          case 2: // 语音聊天
+            benefit.enabled = privileges.voiceEnabled
+            break
+          case 3: // 图片生成
+            benefit.enabled = privileges.imageEnabled
+            break
+          case 4: // 专属角色
+            benefit.enabled = privileges.exclusiveRoleEnabled
+            break
+          case 5: // 聊天导出
+            benefit.enabled = privileges.chatExportEnabled
+            break
+          case 6: // 优先客服
+            benefit.enabled = privileges.prioritySupportEnabled
+            break
+        }
+      })
+    },
+
     showUpgrade() {
-      this.$message.info('会员升级功能开发中...')
+      // 跳转到会员中心
+      this.$router.push('/chat/membership')
     }
   }
 }

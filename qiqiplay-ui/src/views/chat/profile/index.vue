@@ -167,6 +167,7 @@
 <script>
 import MobileNavigation from '../components/MobileNavigation'
 import { getUserInfo, uploadAvatar } from '@/api/chat/profile'
+import { getUserVipInfo } from '@/api/chat/vip'
 
 export default {
   name: 'Profile',
