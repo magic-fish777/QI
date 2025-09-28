@@ -22,6 +22,8 @@ import com.qiqiplay.ai.service.ISysRoleAiService;
 import com.qiqiplay.ai.domain.SysRoleAi;
 import java.util.Base64;
 import java.util.List;
+import java.util.UUID;
+
 import com.qiqiplay.web.controller.chat.domain.TextChatRequest;
 import com.qiqiplay.web.controller.chat.domain.AudioChatRequest;
 import com.qiqiplay.web.controller.chat.domain.ChatResponse;
@@ -102,13 +104,9 @@ public class ChatServiceImpl implements IChatService
             ByteArrayResource audioResource = new ByteArrayResource(audioBytes) {
                 @Override
                 public String getFilename() {
-                    return "audio.wav"; // 提供文件名
+                    return UUID.randomUUID().toString() + ".wav";
                 }
 
-                @Override
-                public String getDescription() {
-                    return "Audio file";
-                }
             };
 
             // 构建multipart/form-data请求
@@ -173,7 +171,7 @@ public class ChatServiceImpl implements IChatService
         chatResponse.setRole(dataNode.path("role").asText());
         chatResponse.setUser(dataNode.path("user").asText());
         chatResponse.setReply(dataNode.path("reply").asText());
-        chatResponse.setAudioFile(dataNode.path("audio_file").asText());
+        chatResponse.setAudioFile(dataNode.path("audio_url").asText());
 
         return chatResponse;
     }
